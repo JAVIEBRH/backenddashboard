@@ -1,0 +1,180 @@
+{
+  "predicciones": [
+    {
+      "fecha": "2025-07-18",
+      "tipo_cliente": "vip",
+      "prediccion": 7,
+      "factores": {
+        "base": 6.0,
+        "factor_tipo": 1.25,
+        "factor_finde": 1.0,
+        "factor_estacional": 0.9,
+        "dia_semana": 4
+      },
+      "efectividad_estimada": 85,
+      "fecha_registro": "2025-07-18T17:24:28.920699",
+      "pedidos_reales": 9,
+      "error_porcentual": 22.2,
+      "efectividad_real": 75,
+      "verificada": true
+    },
+    {
+      "fecha": "2025-07-17",
+      "tipo_cliente": "vip",
+      "prediccion": 7,
+      "factores": {
+        "base": 6.0,
+        "factor_tipo": 1.25,
+        "factor_finde": 1.0,
+        "factor_estacional": 0.9,
+        "dia_semana": 3
+      },
+      "efectividad_estimada": 85,
+      "fecha_registro": "2025-07-18T17:24:32.312833",
+      "pedidos_reales": 11,
+      "error_porcentual": 36.4,
+      "efectividad_real": 50,
+      "verificada": true
+    },
+    {
+      "fecha": "2025-07-16",
+      "tipo_cliente": "vip",
+      "prediccion": 7,
+      "factores": {
+        "base": 6.0,
+        "factor_tipo": 1.25,
+        "factor_finde": 1.0,
+        "factor_estacional": 0.9,
+        "dia_semana": 2
+      },
+      "efectividad_estimada": 85,
+      "fecha_registro": "2025-07-18T17:24:35.471572",
+      "pedidos_reales": 11,
+      "error_porcentual": 36.4,
+      "efectividad_real": 50,
+      "verificada": true
+    },
+    {
+      "fecha": "2025-07-15",
+      "tipo_cliente": "vip",
+      "prediccion": 7,
+      "factores": {
+        "base": 6.0,
+        "factor_tipo": 1.25,
+        "factor_finde": 1.0,
+        "factor_estacional": 0.9,
+        "dia_semana": 1
+      },
+      "efectividad_estimada": 85,
+      "fecha_registro": "2025-07-18T17:24:38.531592",
+      "pedidos_reales": null,
+      "error_porcentual": null,
+      "efectividad_real": null,
+      "verificada": false
+    },
+    {
+      "fecha": "2025-07-14",
+      "tipo_cliente": "vip",
+      "prediccion": 7,
+      "factores": {
+        "base": 6.0,
+        "factor_tipo": 1.25,
+        "factor_finde": 1.0,
+        "factor_estacional": 0.9,
+        "dia_semana": 0
+      },
+      "efectividad_estimada": 85,
+      "fecha_registro": "2025-07-18T17:24:41.644081",
+      "pedidos_reales": null,
+      "error_porcentual": null,
+      "efectividad_real": null,
+      "verificada": false
+    },
+    {
+      "fecha": "2025-07-13",
+      "tipo_cliente": "vip",
+      "prediccion": 5,
+      "factores": {
+        "base": 6.0,
+        "factor_tipo": 1.25,
+        "factor_finde": 0.8,
+        "factor_estacional": 0.9,
+        "dia_semana": 6
+      },
+      "efectividad_estimada": 85,
+      "fecha_registro": "2025-07-18T17:24:44.755732",
+      "pedidos_reales": null,
+      "error_porcentual": null,
+      "efectividad_real": null,
+      "verificada": false
+    },
+    {
+      "fecha": "2025-07-12",
+      "tipo_cliente": "vip",
+      "prediccion": 5,
+      "factores": {
+        "base": 6.0,
+        "factor_tipo": 1.25,
+        "factor_finde": 0.8,
+        "factor_estacional": 0.9,
+        "dia_semana": 5
+      },
+      "efectividad_estimada": 85,
+      "fecha_registro": "2025-07-18T17:24:48.005724",
+      "pedidos_reales": null,
+      "error_porcentual": null,
+      "efectividad_real": null,
+      "verificada": false
+    },
+    {
+      "fecha": "2025-07-19",
+      "tipo_cliente": "recurrente",
+      "prediccion": 5,
+      "factores": {
+        "base": 6.0,
+        "factor_tipo": 1.2,
+        "factor_finde": 0.8,
+        "factor_estacional": 0.9,
+        "dia_semana": 5
+      },
+      "efectividad_estimada": 85,
+      "fecha_registro": "2025-07-18T18:30:41.956790",
+      "pedidos_reales": null,
+      "error_porcentual": null,
+      "efectividad_real": null,
+      "verificada": false
+    },
+    {
+      "fecha": "2025-07-28",
+      "tipo_cliente": "recurrente",
+      "prediccion": 6,
+      "factores": {
+        "base": 6.0,
+        "factor_tipo": 1.2,
+        "factor_finde": 1.0,
+        "factor_estacional": 0.9,
+        "dia_semana": 0
+      },
+      "efectividad_estimada": 85,
+      "fecha_registro": "2025-07-27T13:47:34.063578",
+      "pedidos_reales": null,
+      "error_porcentual": null,
+      "efectividad_real": null,
+      "verificada": false
+    }
+  ],
+  "metricas": {
+    "total_predicciones": 9,
+    "predicciones_verificadas": 3,
+    "error_promedio": 31.7,
+    "efectividad_promedio": 58.3,
+    "predicciones_excelentes": 0,
+    "predicciones_buenas": 1,
+    "predicciones_aceptables": 2,
+    "predicciones_pobres": 0,
+    "porcentaje_excelentes": 0.0,
+    "porcentaje_buenas": 33.3,
+    "porcentaje_aceptables": 66.7,
+    "porcentaje_pobres": 0.0
+  }
+}

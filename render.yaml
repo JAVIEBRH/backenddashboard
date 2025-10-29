@@ -1,0 +1,26 @@
+services:
+  # Backend Service
+  - type: web
+    name: dashboard-aguas-ancud-backend
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    rootDir: .
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+      - key: CORS_ORIGIN
+        value: https://dashboard-aguas-ancud-frontend.onrender.com
+
+  # Frontend Service
+  - type: web
+    name: dashboard-aguas-ancud-frontend
+    env: static
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    rootDir: ../frontend
+    envVars:
+      - key: VITE_API_URL
+        value: https://dashboard-aguas-ancud-backend.onrender.com

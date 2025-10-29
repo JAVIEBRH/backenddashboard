@@ -1,0 +1,1578 @@
+{
+  "fecha_analisis": "2025-07-18T16:14:53.451895",
+  "periodo_analizado": {
+    "inicio": "2025-06-18",
+    "fin": "2025-07-18"
+  },
+  "metricas_generales": {
+    "error_promedio": 248.35154881350533,
+    "cumplimiento_promedio": 332.0440157668418,
+    "total_predicciones": 92
+  },
+  "resultados_detallados": [
+    {
+      "fecha": "2025-06-19",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 10,
+      "pedidos_prediccion": 42,
+      "diferencia": -32,
+      "porcentaje_error": 320.0,
+      "porcentaje_cumplimiento": 420.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 1.01,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-19",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 10,
+      "pedidos_prediccion": 12,
+      "diferencia": -2,
+      "porcentaje_error": 20.0,
+      "porcentaje_cumplimiento": 120.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 1.01,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-19",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 10,
+      "pedidos_prediccion": 6,
+      "diferencia": 4,
+      "porcentaje_error": 40.0,
+      "porcentaje_cumplimiento": 60.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 1.01,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-19",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 10,
+      "pedidos_prediccion": 6,
+      "diferencia": 4,
+      "porcentaje_error": 40.0,
+      "porcentaje_cumplimiento": 60.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 1.01,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-21",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 12,
+      "pedidos_prediccion": 42,
+      "diferencia": -30,
+      "porcentaje_error": 250.0,
+      "porcentaje_cumplimiento": 350.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 1.01,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-21",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 12,
+      "pedidos_prediccion": 12,
+      "diferencia": 0,
+      "porcentaje_error": 0.0,
+      "porcentaje_cumplimiento": 100.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 1.01,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-21",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 12,
+      "pedidos_prediccion": 6,
+      "diferencia": 6,
+      "porcentaje_error": 50.0,
+      "porcentaje_cumplimiento": 50.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 1.01,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-21",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 12,
+      "pedidos_prediccion": 6,
+      "diferencia": 6,
+      "porcentaje_error": 50.0,
+      "porcentaje_cumplimiento": 50.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 1.01,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-23",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 39,
+      "diferencia": -32,
+      "porcentaje_error": 457.1428571428571,
+      "porcentaje_cumplimiento": 557.1428571428571,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 0.95,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-23",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 12,
+      "diferencia": -5,
+      "porcentaje_error": 71.42857142857143,
+      "porcentaje_cumplimiento": 171.42857142857142,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 0.95,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-23",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 6,
+      "diferencia": 1,
+      "porcentaje_error": 14.285714285714285,
+      "porcentaje_cumplimiento": 85.71428571428571,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 0.95,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-23",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 6,
+      "diferencia": 1,
+      "porcentaje_error": 14.285714285714285,
+      "porcentaje_cumplimiento": 85.71428571428571,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 0.95,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-24",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 6,
+      "pedidos_prediccion": 42,
+      "diferencia": -36,
+      "porcentaje_error": 600.0,
+      "porcentaje_cumplimiento": 700.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 1.03,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-24",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 6,
+      "pedidos_prediccion": 15,
+      "diferencia": -9,
+      "porcentaje_error": 150.0,
+      "porcentaje_cumplimiento": 250.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 1.03,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-24",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 6,
+      "pedidos_prediccion": 6,
+      "diferencia": 0,
+      "porcentaje_error": 0.0,
+      "porcentaje_cumplimiento": 100.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 1.03,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-24",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 6,
+      "pedidos_prediccion": 6,
+      "diferencia": 0,
+      "porcentaje_error": 0.0,
+      "porcentaje_cumplimiento": 100.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 1.03,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-25",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 39,
+      "diferencia": -32,
+      "porcentaje_error": 457.1428571428571,
+      "porcentaje_cumplimiento": 557.1428571428571,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 0.95,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-25",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 12,
+      "diferencia": -5,
+      "porcentaje_error": 71.42857142857143,
+      "porcentaje_cumplimiento": 171.42857142857142,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 0.95,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-25",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 6,
+      "diferencia": 1,
+      "porcentaje_error": 14.285714285714285,
+      "porcentaje_cumplimiento": 85.71428571428571,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 0.95,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-25",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 6,
+      "diferencia": 1,
+      "porcentaje_error": 14.285714285714285,
+      "porcentaje_cumplimiento": 85.71428571428571,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 0.95,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-26",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 39,
+      "diferencia": -32,
+      "porcentaje_error": 457.1428571428571,
+      "porcentaje_cumplimiento": 557.1428571428571,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 0.97,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-26",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 12,
+      "diferencia": -5,
+      "porcentaje_error": 71.42857142857143,
+      "porcentaje_cumplimiento": 171.42857142857142,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 0.97,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-26",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 6,
+      "diferencia": 1,
+      "porcentaje_error": 14.285714285714285,
+      "porcentaje_cumplimiento": 85.71428571428571,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 0.97,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-26",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 6,
+      "diferencia": 1,
+      "porcentaje_error": 14.285714285714285,
+      "porcentaje_cumplimiento": 85.71428571428571,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 0.97,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-27",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 2,
+      "pedidos_prediccion": 42,
+      "diferencia": -40,
+      "porcentaje_error": 2000.0,
+      "porcentaje_cumplimiento": 2100.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 1.01,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-27",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 2,
+      "pedidos_prediccion": 12,
+      "diferencia": -10,
+      "porcentaje_error": 500.0,
+      "porcentaje_cumplimiento": 600.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 1.01,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-27",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 2,
+      "pedidos_prediccion": 6,
+      "diferencia": -4,
+      "porcentaje_error": 200.0,
+      "porcentaje_cumplimiento": 300.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 1.01,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-27",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 2,
+      "pedidos_prediccion": 6,
+      "diferencia": -4,
+      "porcentaje_error": 200.0,
+      "porcentaje_cumplimiento": 300.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 1.01,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-28",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 2,
+      "pedidos_prediccion": 39,
+      "diferencia": -37,
+      "porcentaje_error": 1850.0,
+      "porcentaje_cumplimiento": 1950.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 0.96,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-28",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 2,
+      "pedidos_prediccion": 12,
+      "diferencia": -10,
+      "porcentaje_error": 500.0,
+      "porcentaje_cumplimiento": 600.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 0.96,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-28",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 2,
+      "pedidos_prediccion": 6,
+      "diferencia": -4,
+      "porcentaje_error": 200.0,
+      "porcentaje_cumplimiento": 300.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 0.96,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-28",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 2,
+      "pedidos_prediccion": 6,
+      "diferencia": -4,
+      "porcentaje_error": 200.0,
+      "porcentaje_cumplimiento": 300.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 0.96,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-30",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 9,
+      "pedidos_prediccion": 39,
+      "diferencia": -30,
+      "porcentaje_error": 333.33333333333337,
+      "porcentaje_cumplimiento": 433.3333333333333,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 0.98,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-30",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 9,
+      "pedidos_prediccion": 12,
+      "diferencia": -3,
+      "porcentaje_error": 33.33333333333333,
+      "porcentaje_cumplimiento": 133.33333333333331,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 0.98,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-30",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 9,
+      "pedidos_prediccion": 6,
+      "diferencia": 3,
+      "porcentaje_error": 33.33333333333333,
+      "porcentaje_cumplimiento": 66.66666666666666,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 0.98,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-06-30",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 9,
+      "pedidos_prediccion": 6,
+      "diferencia": 3,
+      "porcentaje_error": 33.33333333333333,
+      "porcentaje_cumplimiento": 66.66666666666666,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 0.98,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-01",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 4,
+      "pedidos_prediccion": 39,
+      "diferencia": -35,
+      "porcentaje_error": 875.0,
+      "porcentaje_cumplimiento": 975.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 0.99,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-01",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 4,
+      "pedidos_prediccion": 12,
+      "diferencia": -8,
+      "porcentaje_error": 200.0,
+      "porcentaje_cumplimiento": 300.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 0.99,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-01",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 4,
+      "pedidos_prediccion": 6,
+      "diferencia": -2,
+      "porcentaje_error": 50.0,
+      "porcentaje_cumplimiento": 150.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 0.99,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-01",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 4,
+      "pedidos_prediccion": 6,
+      "diferencia": -2,
+      "porcentaje_error": 50.0,
+      "porcentaje_cumplimiento": 150.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 0.99,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-02",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 8,
+      "pedidos_prediccion": 42,
+      "diferencia": -34,
+      "porcentaje_error": 425.0,
+      "porcentaje_cumplimiento": 525.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 1.04,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-02",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 8,
+      "pedidos_prediccion": 15,
+      "diferencia": -7,
+      "porcentaje_error": 87.5,
+      "porcentaje_cumplimiento": 187.5,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 1.04,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-02",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 8,
+      "pedidos_prediccion": 6,
+      "diferencia": 2,
+      "porcentaje_error": 25.0,
+      "porcentaje_cumplimiento": 75.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 1.04,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-02",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 8,
+      "pedidos_prediccion": 6,
+      "diferencia": 2,
+      "porcentaje_error": 25.0,
+      "porcentaje_cumplimiento": 75.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 1.04,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-03",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 39,
+      "diferencia": -32,
+      "porcentaje_error": 457.1428571428571,
+      "porcentaje_cumplimiento": 557.1428571428571,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 0.98,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-03",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 12,
+      "diferencia": -5,
+      "porcentaje_error": 71.42857142857143,
+      "porcentaje_cumplimiento": 171.42857142857142,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 0.98,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-03",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 6,
+      "diferencia": 1,
+      "porcentaje_error": 14.285714285714285,
+      "porcentaje_cumplimiento": 85.71428571428571,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 0.98,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-03",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 6,
+      "diferencia": 1,
+      "porcentaje_error": 14.285714285714285,
+      "porcentaje_cumplimiento": 85.71428571428571,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 0.98,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-05",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 4,
+      "pedidos_prediccion": 39,
+      "diferencia": -35,
+      "porcentaje_error": 875.0,
+      "porcentaje_cumplimiento": 975.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 0.99,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-05",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 4,
+      "pedidos_prediccion": 12,
+      "diferencia": -8,
+      "porcentaje_error": 200.0,
+      "porcentaje_cumplimiento": 300.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 0.99,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-05",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 4,
+      "pedidos_prediccion": 6,
+      "diferencia": -2,
+      "porcentaje_error": 50.0,
+      "porcentaje_cumplimiento": 150.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 0.99,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-05",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 4,
+      "pedidos_prediccion": 6,
+      "diferencia": -2,
+      "porcentaje_error": 50.0,
+      "porcentaje_cumplimiento": 150.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 0.99,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-07",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 39,
+      "diferencia": -32,
+      "porcentaje_error": 457.1428571428571,
+      "porcentaje_cumplimiento": 557.1428571428571,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 0.98,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-07",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 12,
+      "diferencia": -5,
+      "porcentaje_error": 71.42857142857143,
+      "porcentaje_cumplimiento": 171.42857142857142,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 0.98,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-07",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 6,
+      "diferencia": 1,
+      "porcentaje_error": 14.285714285714285,
+      "porcentaje_cumplimiento": 85.71428571428571,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 0.98,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-07",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 6,
+      "diferencia": 1,
+      "porcentaje_error": 14.285714285714285,
+      "porcentaje_cumplimiento": 85.71428571428571,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 0.98,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-08",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 6,
+      "pedidos_prediccion": 39,
+      "diferencia": -33,
+      "porcentaje_error": 550.0,
+      "porcentaje_cumplimiento": 650.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 0.96,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-08",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 6,
+      "pedidos_prediccion": 12,
+      "diferencia": -6,
+      "porcentaje_error": 100.0,
+      "porcentaje_cumplimiento": 200.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 0.96,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-08",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 6,
+      "pedidos_prediccion": 6,
+      "diferencia": 0,
+      "porcentaje_error": 0.0,
+      "porcentaje_cumplimiento": 100.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 0.96,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-08",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 6,
+      "pedidos_prediccion": 6,
+      "diferencia": 0,
+      "porcentaje_error": 0.0,
+      "porcentaje_cumplimiento": 100.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 0.96,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-09",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 6,
+      "pedidos_prediccion": 42,
+      "diferencia": -36,
+      "porcentaje_error": 600.0,
+      "porcentaje_cumplimiento": 700.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 1.04,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-09",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 6,
+      "pedidos_prediccion": 15,
+      "diferencia": -9,
+      "porcentaje_error": 150.0,
+      "porcentaje_cumplimiento": 250.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 1.04,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-09",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 6,
+      "pedidos_prediccion": 6,
+      "diferencia": 0,
+      "porcentaje_error": 0.0,
+      "porcentaje_cumplimiento": 100.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 1.04,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-09",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 6,
+      "pedidos_prediccion": 6,
+      "diferencia": 0,
+      "porcentaje_error": 0.0,
+      "porcentaje_cumplimiento": 100.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 1.04,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-10",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 2,
+      "pedidos_prediccion": 42,
+      "diferencia": -40,
+      "porcentaje_error": 2000.0,
+      "porcentaje_cumplimiento": 2100.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 1.03,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-10",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 2,
+      "pedidos_prediccion": 15,
+      "diferencia": -13,
+      "porcentaje_error": 650.0,
+      "porcentaje_cumplimiento": 750.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 1.03,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-10",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 2,
+      "pedidos_prediccion": 6,
+      "diferencia": -4,
+      "porcentaje_error": 200.0,
+      "porcentaje_cumplimiento": 300.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 1.03,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-10",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 2,
+      "pedidos_prediccion": 6,
+      "diferencia": -4,
+      "porcentaje_error": 200.0,
+      "porcentaje_cumplimiento": 300.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 1.03,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-11",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 6,
+      "pedidos_prediccion": 39,
+      "diferencia": -33,
+      "porcentaje_error": 550.0,
+      "porcentaje_cumplimiento": 650.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 0.99,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-11",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 6,
+      "pedidos_prediccion": 12,
+      "diferencia": -6,
+      "porcentaje_error": 100.0,
+      "porcentaje_cumplimiento": 200.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 0.99,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-11",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 6,
+      "pedidos_prediccion": 6,
+      "diferencia": 0,
+      "porcentaje_error": 0.0,
+      "porcentaje_cumplimiento": 100.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 0.99,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-11",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 6,
+      "pedidos_prediccion": 6,
+      "diferencia": 0,
+      "porcentaje_error": 0.0,
+      "porcentaje_cumplimiento": 100.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 0.99,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-12",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 42,
+      "diferencia": -35,
+      "porcentaje_error": 500.0,
+      "porcentaje_cumplimiento": 600.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 1.01,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-12",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 12,
+      "diferencia": -5,
+      "porcentaje_error": 71.42857142857143,
+      "porcentaje_cumplimiento": 171.42857142857142,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 1.01,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-12",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 6,
+      "diferencia": 1,
+      "porcentaje_error": 14.285714285714285,
+      "porcentaje_cumplimiento": 85.71428571428571,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 1.01,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-12",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 7,
+      "pedidos_prediccion": 6,
+      "diferencia": 1,
+      "porcentaje_error": 14.285714285714285,
+      "porcentaje_cumplimiento": 85.71428571428571,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 1.01,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-14",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 12,
+      "pedidos_prediccion": 39,
+      "diferencia": -27,
+      "porcentaje_error": 225.0,
+      "porcentaje_cumplimiento": 325.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 0.97,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-14",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 12,
+      "pedidos_prediccion": 12,
+      "diferencia": 0,
+      "porcentaje_error": 0.0,
+      "porcentaje_cumplimiento": 100.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 0.97,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-14",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 12,
+      "pedidos_prediccion": 6,
+      "diferencia": 6,
+      "porcentaje_error": 50.0,
+      "porcentaje_cumplimiento": 50.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 0.97,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-14",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 12,
+      "pedidos_prediccion": 6,
+      "diferencia": 6,
+      "porcentaje_error": 50.0,
+      "porcentaje_cumplimiento": 50.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 0.97,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-15",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 9,
+      "pedidos_prediccion": 39,
+      "diferencia": -30,
+      "porcentaje_error": 333.33333333333337,
+      "porcentaje_cumplimiento": 433.3333333333333,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 0.98,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-15",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 9,
+      "pedidos_prediccion": 12,
+      "diferencia": -3,
+      "porcentaje_error": 33.33333333333333,
+      "porcentaje_cumplimiento": 133.33333333333331,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 0.98,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-15",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 9,
+      "pedidos_prediccion": 6,
+      "diferencia": 3,
+      "porcentaje_error": 33.33333333333333,
+      "porcentaje_cumplimiento": 66.66666666666666,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 0.98,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-15",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 9,
+      "pedidos_prediccion": 6,
+      "diferencia": 3,
+      "porcentaje_error": 33.33333333333333,
+      "porcentaje_cumplimiento": 66.66666666666666,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 0.98,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-17",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 13,
+      "pedidos_prediccion": 42,
+      "diferencia": -29,
+      "porcentaje_error": 223.0769230769231,
+      "porcentaje_cumplimiento": 323.0769230769231,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 1.01,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-17",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 13,
+      "pedidos_prediccion": 12,
+      "diferencia": 1,
+      "porcentaje_error": 7.6923076923076925,
+      "porcentaje_cumplimiento": 92.3076923076923,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 1.01,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-17",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 13,
+      "pedidos_prediccion": 6,
+      "diferencia": 7,
+      "porcentaje_error": 53.84615384615385,
+      "porcentaje_cumplimiento": 46.15384615384615,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 1.01,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-17",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 13,
+      "pedidos_prediccion": 6,
+      "diferencia": 7,
+      "porcentaje_error": 53.84615384615385,
+      "porcentaje_cumplimiento": 46.15384615384615,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 1.01,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-18",
+      "tipo_cliente": "recurrente",
+      "pedidos_reales": 2,
+      "pedidos_prediccion": 39,
+      "diferencia": -37,
+      "porcentaje_error": 1850.0,
+      "porcentaje_cumplimiento": 1950.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 2.38,
+        "factor_aleatorio": 0.95,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-18",
+      "tipo_cliente": "residencial",
+      "pedidos_reales": 2,
+      "pedidos_prediccion": 12,
+      "diferencia": -10,
+      "porcentaje_error": 500.0,
+      "porcentaje_cumplimiento": 600.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.79,
+        "factor_aleatorio": 0.95,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-18",
+      "tipo_cliente": "nuevo",
+      "pedidos_reales": 2,
+      "pedidos_prediccion": 6,
+      "diferencia": -4,
+      "porcentaje_error": 200.0,
+      "porcentaje_cumplimiento": 300.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.41,
+        "factor_aleatorio": 0.95,
+        "tendencia": 1.15
+      }
+    },
+    {
+      "fecha": "2025-07-18",
+      "tipo_cliente": "empresa",
+      "pedidos_reales": 2,
+      "pedidos_prediccion": 6,
+      "diferencia": -4,
+      "porcentaje_error": 200.0,
+      "porcentaje_cumplimiento": 300.0,
+      "factores_usados": {
+        "promedio_base": 4.9,
+        "factor_dia": 1.0,
+        "factor_temporada": 1.0,
+        "factor_tipo": 0.42,
+        "factor_aleatorio": 0.95,
+        "tendencia": 1.15
+      }
+    }
+  ]
+}

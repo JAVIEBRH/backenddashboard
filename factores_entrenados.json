@@ -1,0 +1,43 @@
+{
+  "fecha_entrenamiento": "2025-07-18T18:28:50.536815",
+  "periodo_analisis": "3 meses",
+  "total_dias_analizados": 72,
+  "total_pedidos_analizados": 460,
+  "estadisticas_generales": {
+    "media": 6.39,
+    "mediana": 6.0,
+    "desviacion_estandar": 2.94,
+    "coeficiente_variacion": 0.46
+  },
+  "factores_dia_semana": {
+    "Lunes": 1.252,
+    "Martes": 0.915,
+    "Miércoles": 0.953,
+    "Jueves": 1.057,
+    "Viernes": 1.067,
+    "Sábado": 0.743,
+    "Domingo": 1.0
+  },
+  "factores_mes": {
+    "Enero": 1.0,
+    "Febrero": 1.0,
+    "Marzo": 1.0,
+    "Abril": 0.957,
+    "Mayo": 1.039,
+    "Junio": 0.952,
+    "Julio": 1.04,
+    "Agosto": 1.0,
+    "Septiembre": 1.0,
+    "Octubre": 1.0,
+    "Noviembre": 1.0,
+    "Diciembre": 1.0
+  },
+  "factor_tendencia": 1.159,
+  "efectividad_estimada": 65,
+  "recomendaciones_entrenamiento": [
+    "⚠️ Datos muy variables: Considerar factores adicionales",
+    "📈 Tendencia creciente detectada: Ajustar factores al alza",
+    "📊 Lunes: Alta demanda (factor 1.252)",
+    "📊 Sábado: Baja demanda (factor 0.743)"
+  ]
+}

@@ -1,0 +1,339 @@
+{
+  "fecha_analisis": "2025-07-18T16:27:19.766292",
+  "factores_dinamicos": {
+    "medianas_por_dia": {
+      "0": 8.0,
+      "1": 6.0,
+      "2": 7.0,
+      "3": 7.0,
+      "4": 2.0,
+      "5": 5.5,
+      "6": 7.0
+    },
+    "factores_tipo": {
+      "recurrente": 1.15,
+      "residencial": 1.0,
+      "nuevo": 0.85,
+      "empresa": 0.9
+    },
+    "anomalias": [],
+    "intervalo_confianza": {
+      "percentil_25": 5.0,
+      "percentil_75": 8.5
+    },
+    "estadisticas": {
+      "media": 6.739130434782608,
+      "mediana": 7.0,
+      "desviacion": 3.1939913944261007
+    }
+  },
+  "resultados_prueba": {
+    "error_promedio": 38.80965652704783,
+    "predicciones_excelentes": 13,
+    "predicciones_buenas": 20,
+    "predicciones_aceptables": 21,
+    "porcentaje_en_rango": 47.82608695652174,
+    "total_predicciones": 23,
+    "resultados_detallados": [
+      {
+        "fecha": "2025-06-19",
+        "real": 10,
+        "prediccion": 7,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": false,
+        "es_anomalia": false,
+        "error_porcentual": 30.0
+      },
+      {
+        "fecha": "2025-06-21",
+        "real": 12,
+        "prediccion": 6,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": false,
+        "es_anomalia": false,
+        "error_porcentual": 50.0
+      },
+      {
+        "fecha": "2025-06-23",
+        "real": 7,
+        "prediccion": 8,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": true,
+        "es_anomalia": false,
+        "error_porcentual": 14.285714285714285
+      },
+      {
+        "fecha": "2025-06-24",
+        "real": 6,
+        "prediccion": 6,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": true,
+        "es_anomalia": false,
+        "error_porcentual": 0.0
+      },
+      {
+        "fecha": "2025-06-25",
+        "real": 7,
+        "prediccion": 7,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": true,
+        "es_anomalia": false,
+        "error_porcentual": 0.0
+      },
+      {
+        "fecha": "2025-06-26",
+        "real": 7,
+        "prediccion": 7,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": true,
+        "es_anomalia": false,
+        "error_porcentual": 0.0
+      },
+      {
+        "fecha": "2025-06-27",
+        "real": 2,
+        "prediccion": 2,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": false,
+        "es_anomalia": false,
+        "error_porcentual": 0.0
+      },
+      {
+        "fecha": "2025-06-28",
+        "real": 2,
+        "prediccion": 6,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": false,
+        "es_anomalia": false,
+        "error_porcentual": 200.0
+      },
+      {
+        "fecha": "2025-06-30",
+        "real": 9,
+        "prediccion": 8,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": false,
+        "es_anomalia": false,
+        "error_porcentual": 11.11111111111111
+      },
+      {
+        "fecha": "2025-07-01",
+        "real": 4,
+        "prediccion": 6,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": false,
+        "es_anomalia": false,
+        "error_porcentual": 50.0
+      },
+      {
+        "fecha": "2025-07-02",
+        "real": 8,
+        "prediccion": 7,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": true,
+        "es_anomalia": false,
+        "error_porcentual": 12.5
+      },
+      {
+        "fecha": "2025-07-03",
+        "real": 7,
+        "prediccion": 7,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": true,
+        "es_anomalia": false,
+        "error_porcentual": 0.0
+      },
+      {
+        "fecha": "2025-07-05",
+        "real": 4,
+        "prediccion": 6,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": false,
+        "es_anomalia": false,
+        "error_porcentual": 50.0
+      },
+      {
+        "fecha": "2025-07-07",
+        "real": 7,
+        "prediccion": 8,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": true,
+        "es_anomalia": false,
+        "error_porcentual": 14.285714285714285
+      },
+      {
+        "fecha": "2025-07-08",
+        "real": 6,
+        "prediccion": 6,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": true,
+        "es_anomalia": false,
+        "error_porcentual": 0.0
+      },
+      {
+        "fecha": "2025-07-09",
+        "real": 6,
+        "prediccion": 7,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": true,
+        "es_anomalia": false,
+        "error_porcentual": 16.666666666666664
+      },
+      {
+        "fecha": "2025-07-10",
+        "real": 2,
+        "prediccion": 7,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": false,
+        "es_anomalia": false,
+        "error_porcentual": 250.0
+      },
+      {
+        "fecha": "2025-07-11",
+        "real": 6,
+        "prediccion": 2,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": true,
+        "es_anomalia": false,
+        "error_porcentual": 66.66666666666666
+      },
+      {
+        "fecha": "2025-07-12",
+        "real": 7,
+        "prediccion": 6,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": true,
+        "es_anomalia": false,
+        "error_porcentual": 14.285714285714285
+      },
+      {
+        "fecha": "2025-07-14",
+        "real": 12,
+        "prediccion": 8,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": false,
+        "es_anomalia": false,
+        "error_porcentual": 33.33333333333333
+      },
+      {
+        "fecha": "2025-07-15",
+        "real": 9,
+        "prediccion": 6,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": false,
+        "es_anomalia": false,
+        "error_porcentual": 33.33333333333333
+      },
+      {
+        "fecha": "2025-07-17",
+        "real": 13,
+        "prediccion": 7,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": false,
+        "es_anomalia": false,
+        "error_porcentual": 46.15384615384615
+      },
+      {
+        "fecha": "2025-07-18",
+        "real": 2,
+        "prediccion": 2,
+        "rango_confianza": [
+          5,
+          8
+        ],
+        "nivel_confianza": 75,
+        "en_rango": false,
+        "es_anomalia": false,
+        "error_porcentual": 0.0
+      }
+    ]
+  }
+}

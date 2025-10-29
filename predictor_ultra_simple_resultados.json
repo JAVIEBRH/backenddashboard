@@ -1,0 +1,163 @@
+{
+  "fecha_analisis": "2025-07-18T16:18:24.636266",
+  "estadisticas": {
+    "mediana_general": 7.0,
+    "promedio_general": 7.246305418719212,
+    "medianas_por_dia": {
+      "0": 10.0,
+      "1": 7.0,
+      "2": 7.0,
+      "3": 7.0,
+      "4": 7.0,
+      "5": 5.0,
+      "6": 7.0
+    }
+  },
+  "resultados_prueba": {
+    "error_promedio": 59.910415671285236,
+    "predicciones_excelentes": 14,
+    "predicciones_buenas": 18,
+    "predicciones_aceptables": 19,
+    "total_predicciones": 23,
+    "resultados_detallados": [
+      {
+        "fecha": "2025-06-19",
+        "real": 10,
+        "prediccion": 7,
+        "error_porcentual": 30.0
+      },
+      {
+        "fecha": "2025-06-21",
+        "real": 12,
+        "prediccion": 5,
+        "error_porcentual": 58.333333333333336
+      },
+      {
+        "fecha": "2025-06-23",
+        "real": 7,
+        "prediccion": 10,
+        "error_porcentual": 42.857142857142854
+      },
+      {
+        "fecha": "2025-06-24",
+        "real": 6,
+        "prediccion": 7,
+        "error_porcentual": 16.666666666666664
+      },
+      {
+        "fecha": "2025-06-25",
+        "real": 7,
+        "prediccion": 7,
+        "error_porcentual": 0.0
+      },
+      {
+        "fecha": "2025-06-26",
+        "real": 7,
+        "prediccion": 7,
+        "error_porcentual": 0.0
+      },
+      {
+        "fecha": "2025-06-27",
+        "real": 2,
+        "prediccion": 7,
+        "error_porcentual": 250.0
+      },
+      {
+        "fecha": "2025-06-28",
+        "real": 2,
+        "prediccion": 5,
+        "error_porcentual": 150.0
+      },
+      {
+        "fecha": "2025-06-30",
+        "real": 9,
+        "prediccion": 10,
+        "error_porcentual": 11.11111111111111
+      },
+      {
+        "fecha": "2025-07-01",
+        "real": 4,
+        "prediccion": 7,
+        "error_porcentual": 75.0
+      },
+      {
+        "fecha": "2025-07-02",
+        "real": 8,
+        "prediccion": 7,
+        "error_porcentual": 12.5
+      },
+      {
+        "fecha": "2025-07-03",
+        "real": 7,
+        "prediccion": 7,
+        "error_porcentual": 0.0
+      },
+      {
+        "fecha": "2025-07-05",
+        "real": 4,
+        "prediccion": 5,
+        "error_porcentual": 25.0
+      },
+      {
+        "fecha": "2025-07-07",
+        "real": 7,
+        "prediccion": 10,
+        "error_porcentual": 42.857142857142854
+      },
+      {
+        "fecha": "2025-07-08",
+        "real": 6,
+        "prediccion": 7,
+        "error_porcentual": 16.666666666666664
+      },
+      {
+        "fecha": "2025-07-09",
+        "real": 6,
+        "prediccion": 7,
+        "error_porcentual": 16.666666666666664
+      },
+      {
+        "fecha": "2025-07-10",
+        "real": 2,
+        "prediccion": 7,
+        "error_porcentual": 250.0
+      },
+      {
+        "fecha": "2025-07-11",
+        "real": 6,
+        "prediccion": 7,
+        "error_porcentual": 16.666666666666664
+      },
+      {
+        "fecha": "2025-07-12",
+        "real": 7,
+        "prediccion": 5,
+        "error_porcentual": 28.57142857142857
+      },
+      {
+        "fecha": "2025-07-14",
+        "real": 12,
+        "prediccion": 10,
+        "error_porcentual": 16.666666666666664
+      },
+      {
+        "fecha": "2025-07-15",
+        "real": 9,
+        "prediccion": 7,
+        "error_porcentual": 22.22222222222222
+      },
+      {
+        "fecha": "2025-07-17",
+        "real": 13,
+        "prediccion": 7,
+        "error_porcentual": 46.15384615384615
+      },
+      {
+        "fecha": "2025-07-18",
+        "real": 2,
+        "prediccion": 7,
+        "error_porcentual": 250.0
+      }
+    ]
+  }
+}

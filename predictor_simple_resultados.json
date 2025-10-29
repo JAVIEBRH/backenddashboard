@@ -1,0 +1,339 @@
+{
+  "fecha_analisis": "2025-07-18T16:17:23.310080",
+  "estadisticas": {
+    "promedio_general": 7.246305418719212,
+    "mediana_general": 7.0,
+    "desviacion": 3.445246926056991,
+    "factores_dia": {
+      "0": 50.785,
+      "1": 33.81,
+      "2": 31.326,
+      "3": 32.43,
+      "4": 31.464,
+      "5": 23.184,
+      "6": 1.0
+    },
+    "factores_mes": {
+      "0": 0.805,
+      "1": 0.851,
+      "2": 0.745,
+      "3": 0.754,
+      "4": 0.764,
+      "5": 0.672,
+      "6": 0.428,
+      "7": 1.0,
+      "8": 1.0,
+      "9": 0.028,
+      "10": 0.842,
+      "11": 0.879
+    }
+  },
+  "resultados_prueba": {
+    "error_promedio": 2082.2957477305304,
+    "predicciones_excelentes": 0,
+    "predicciones_buenas": 0,
+    "predicciones_aceptables": 0,
+    "total_predicciones": 23,
+    "resultados_detallados": [
+      {
+        "fecha": "2025-06-19",
+        "real": 10,
+        "prediccion": 137,
+        "error_porcentual": 1270.0,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 32.43,
+          "factor_mes": 0.672,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      },
+      {
+        "fecha": "2025-06-21",
+        "real": 12,
+        "prediccion": 98,
+        "error_porcentual": 716.6666666666667,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 23.184,
+          "factor_mes": 0.672,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      },
+      {
+        "fecha": "2025-06-23",
+        "real": 7,
+        "prediccion": 215,
+        "error_porcentual": 2971.4285714285716,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 50.785,
+          "factor_mes": 0.672,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      },
+      {
+        "fecha": "2025-06-24",
+        "real": 6,
+        "prediccion": 143,
+        "error_porcentual": 2283.333333333333,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 33.81,
+          "factor_mes": 0.672,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      },
+      {
+        "fecha": "2025-06-25",
+        "real": 7,
+        "prediccion": 133,
+        "error_porcentual": 1800.0,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 31.326,
+          "factor_mes": 0.672,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      },
+      {
+        "fecha": "2025-06-26",
+        "real": 7,
+        "prediccion": 137,
+        "error_porcentual": 1857.1428571428573,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 32.43,
+          "factor_mes": 0.672,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      },
+      {
+        "fecha": "2025-06-27",
+        "real": 2,
+        "prediccion": 133,
+        "error_porcentual": 6550.0,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 31.464,
+          "factor_mes": 0.672,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      },
+      {
+        "fecha": "2025-06-28",
+        "real": 2,
+        "prediccion": 98,
+        "error_porcentual": 4800.0,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 23.184,
+          "factor_mes": 0.672,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      },
+      {
+        "fecha": "2025-06-30",
+        "real": 9,
+        "prediccion": 215,
+        "error_porcentual": 2288.888888888889,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 50.785,
+          "factor_mes": 0.672,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      },
+      {
+        "fecha": "2025-07-01",
+        "real": 4,
+        "prediccion": 91,
+        "error_porcentual": 2175.0,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 33.81,
+          "factor_mes": 0.428,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      },
+      {
+        "fecha": "2025-07-02",
+        "real": 8,
+        "prediccion": 84,
+        "error_porcentual": 950.0,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 31.326,
+          "factor_mes": 0.428,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      },
+      {
+        "fecha": "2025-07-03",
+        "real": 7,
+        "prediccion": 87,
+        "error_porcentual": 1142.857142857143,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 32.43,
+          "factor_mes": 0.428,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      },
+      {
+        "fecha": "2025-07-05",
+        "real": 4,
+        "prediccion": 63,
+        "error_porcentual": 1475.0,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 23.184,
+          "factor_mes": 0.428,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      },
+      {
+        "fecha": "2025-07-07",
+        "real": 7,
+        "prediccion": 137,
+        "error_porcentual": 1857.1428571428573,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 50.785,
+          "factor_mes": 0.428,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      },
+      {
+        "fecha": "2025-07-08",
+        "real": 6,
+        "prediccion": 91,
+        "error_porcentual": 1416.6666666666665,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 33.81,
+          "factor_mes": 0.428,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      },
+      {
+        "fecha": "2025-07-09",
+        "real": 6,
+        "prediccion": 84,
+        "error_porcentual": 1300.0,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 31.326,
+          "factor_mes": 0.428,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      },
+      {
+        "fecha": "2025-07-10",
+        "real": 2,
+        "prediccion": 87,
+        "error_porcentual": 4250.0,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 32.43,
+          "factor_mes": 0.428,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      },
+      {
+        "fecha": "2025-07-11",
+        "real": 6,
+        "prediccion": 85,
+        "error_porcentual": 1316.6666666666665,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 31.464,
+          "factor_mes": 0.428,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      },
+      {
+        "fecha": "2025-07-12",
+        "real": 7,
+        "prediccion": 63,
+        "error_porcentual": 800.0,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 23.184,
+          "factor_mes": 0.428,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      },
+      {
+        "fecha": "2025-07-14",
+        "real": 12,
+        "prediccion": 137,
+        "error_porcentual": 1041.6666666666665,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 50.785,
+          "factor_mes": 0.428,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      },
+      {
+        "fecha": "2025-07-15",
+        "real": 9,
+        "prediccion": 91,
+        "error_porcentual": 911.1111111111111,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 33.81,
+          "factor_mes": 0.428,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      },
+      {
+        "fecha": "2025-07-17",
+        "real": 13,
+        "prediccion": 87,
+        "error_porcentual": 569.2307692307693,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 32.43,
+          "factor_mes": 0.428,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      },
+      {
+        "fecha": "2025-07-18",
+        "real": 2,
+        "prediccion": 85,
+        "error_porcentual": 4150.0,
+        "factores": {
+          "base": 7.0,
+          "factor_dia": 31.464,
+          "factor_mes": 0.428,
+          "factor_tipo": 1.0,
+          "factor_seguridad": 0.9
+        }
+      }
+    ]
+  }
+}
