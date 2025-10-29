@@ -1742,9 +1742,11 @@ def get_ventas_diarias():
         
         df = pd.DataFrame(pedidos)
         if 'nombrelocal' in df.columns:
-            df = df[df['nombrelocal'] == 'Aguas Ancud']
+            df_filtrado = df[df['nombrelocal'] == 'Aguas Ancud']
+            if not df_filtrado.empty:
+                df = df_filtrado
         
-        if df.empty or 'fecha' not in df.columns:
+        if df.empty or (('fecha' not in df.columns) and ('fecha_parsed' not in df.columns)):
             return {
                 "ventas_hoy": 0,
                 "ventas_mismo_dia_mes_anterior": 0,
@@ -1755,8 +1757,24 @@ def get_ventas_diarias():
                 "tipo_comparacion": "mensual"
             }
         
-        # Convertir fechas y precios
-        df['fecha_parsed'] = df['fecha'].apply(parse_fecha)
+        # Convertir fechas y precios de forma robusta
+        if 'fecha_parsed' in df.columns:
+            df['fecha_parsed'] = pd.to_datetime(df['fecha_parsed'], errors='coerce')
+        else:
+            df['fecha_parsed'] = pd.to_datetime(df['fecha'], errors='coerce', dayfirst=True)
+            if df['fecha_parsed'].isna().all():
+                df['fecha_parsed'] = pd.to_datetime(df['fecha'].apply(lambda x: str(x).replace('Z', '+00:00')), errors='coerce')
+        df = df.dropna(subset=['fecha_parsed'])
+        if df.empty:
+            return {
+                "ventas_hoy": 0,
+                "ventas_mismo_dia_mes_anterior": 0,
+                "porcentaje_cambio": 0,
+                "es_positivo": True,
+                "fecha_comparacion": "",
+                "tendencia_7_dias": [],
+                "tipo_comparacion": "mensual"
+            }
         df['precio'] = pd.to_numeric(df['precio'], errors='coerce').fillna(0)
         
         # Obtener fecha máxima de los datos
