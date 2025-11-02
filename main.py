@@ -3295,7 +3295,17 @@ def test_endpoint():
 
 @app.get("/health")
 def health_check():
-    """Endpoint de health check para monitoreo"""
+    """Endpoint de health check rápido para keep-alive"""
+    # Health check optimizado para Render - respuesta inmediata sin llamadas externas
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "version": "2.0"
+    }
+
+@app.get("/health/detailed")
+def health_check_detailed():
+    """Endpoint de health check detallado con verificación de servicios externos"""
     try:
         # Verificar conexión a APIs externas
         test_clientes = requests.get(ENDPOINT_CLIENTES, headers=HEADERS, timeout=5)
@@ -3311,7 +3321,7 @@ def health_check():
             "version": "2.0"
         }
     except Exception as e:
-        logger.warning(f"Health check con problemas: {e}")
+        logger.warning(f"Health check detallado con problemas: {e}")
         return {
             "status": "degraded",
             "timestamp": datetime.now().isoformat(),
