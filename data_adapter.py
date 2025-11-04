@@ -1,18 +1,14 @@
 """
 Capa de adaptación de datos para unificar formatos antiguos y nuevos
 Mantiene compatibilidad total con el frontend existente
-Optimizado con peticiones asíncronas y caché en memoria
 """
 
 import requests
 import json
-import asyncio
 from datetime import datetime
 from typing import List, Dict, Optional
 from pydantic import BaseModel, Field
 import logging
-# from services.async_data_fetcher import async_data_fetcher
-# from utils.cache_manager import cache_manager
 
 # Configuración de logging
 logging.basicConfig(level=logging.INFO)
@@ -111,7 +107,7 @@ class PedidoNuevo(BaseModel):
     rating: Optional[Dict] = None
 
 class DataAdapter:
-    """Adaptador principal para unificar datos antiguos y nuevos con caché asíncrono"""
+    """Adaptador principal para unificar datos antiguos y nuevos"""
     
     def __init__(self):
         self.pedidos_antiguos_cache = None
@@ -119,7 +115,6 @@ class DataAdapter:
         self.pedidos_nuevos_cache = None
         self.cache_timestamp = None
         self.cache_duration = 1800  # 30 minutos
-        self.use_async = True  # Habilitar modo asíncrono
     
     def _is_cache_valid(self) -> bool:
         """Verifica si el cache es válido"""
@@ -314,48 +309,8 @@ class DataAdapter:
             logger.error(f"Error combinando clientes: {e}")
             return clientes_antiguos
     
-    async def obtener_pedidos_combinados_async(self) -> List[Dict]:
-        """Obtiene pedidos combinados usando peticiones asíncronas con caché"""
-        cache_key = "pedidos_combinados"
-        
-        # Verificar caché asíncrono
-        cached_data = await cache_manager.get(cache_key, "pedidos")
-        if cached_data:
-            logger.info(f"Usando caché asíncrono de pedidos: {len(cached_data)} registros")
-            return cached_data
-        
-        logger.info("Cache no válido o vacío, obteniendo datos frescos con peticiones asíncronas...")
-        try:
-            # Obtener todos los datos de forma concurrente
-            results = await async_data_fetcher.fetch_all_data_concurrent()
-            
-            # Extraer datos de los resultados
-            pedidos_antiguos = results['pedidos_antiguos']['data'] if results['pedidos_antiguos']['success'] else []
-            pedidos_nuevos = results['pedidos_nuevos']['data'] if results['pedidos_nuevos']['success'] else []
-            
-            logger.info(f"Datos obtenidos asíncronamente - Antiguos: {len(pedidos_antiguos)}, Nuevos: {len(pedidos_nuevos)}")
-            
-            # Combinar y ordenar
-            pedidos_combinados = self.combinar_pedidos(pedidos_antiguos, pedidos_nuevos)
-            
-            logger.info(f"Pedidos combinados: {len(pedidos_combinados)} registros")
-            
-            # Actualizar caché asíncrono
-            await cache_manager.set(cache_key, pedidos_combinados, "pedidos", 1800)  # 30 minutos
-            
-            logger.info("Cache asíncrono actualizado exitosamente")
-            return pedidos_combinados
-            
-        except Exception as e:
-            logger.error(f"Error obteniendo pedidos combinados asíncronamente: {e}")
-            # Fallback: usar caché síncrono si está disponible
-            if self.pedidos_antiguos_cache is not None:
-                logger.info("Usando cache síncrono como fallback debido a error")
-                return self.pedidos_antiguos_cache
-            return []
-    
     def obtener_pedidos_combinados(self) -> List[Dict]:
-        """Obtiene pedidos combinados (antiguos + nuevos) con cache - versión síncrona"""
+        """Obtiene pedidos combinados (antiguos + nuevos) con cache"""
         logger.info(f"Cache válido: {self._is_cache_valid()}, Cache disponible: {self.pedidos_antiguos_cache is not None}")
         
         if self._is_cache_valid() and self.pedidos_antiguos_cache is not None:
