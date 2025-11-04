@@ -1,5 +1,7 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 import requests
 import pandas as pd
 from typing import List, Dict, Optional, Tuple
@@ -9,6 +11,7 @@ import numpy as np
 import warnings
 import asyncio
 import logging
+import traceback
 warnings.filterwarnings('ignore')
 
 # Configuración del logger
@@ -29,20 +32,59 @@ import os
 # Obtener origen permitido desde variable de entorno o usar valor por defecto
 CORS_ORIGIN = os.getenv("CORS_ORIGIN", "http://localhost:5173")
 
+# Lista completa de orígenes permitidos
+ALLOWED_ORIGINS = [
+    CORS_ORIGIN, 
+    "http://localhost:5173", 
+    "http://localhost:5174", 
+    "http://localhost:5175", 
+    "http://localhost:3000",
+    "https://dashboard-aguas-ancud-frontend-v2.onrender.com",
+    "https://frontenddashboard-opqq.onrender.com"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        CORS_ORIGIN, 
-        "http://localhost:5173", 
-        "http://localhost:5174", 
-        "http://localhost:5175", 
-        "http://localhost:3000",
-        "https://dashboard-aguas-ancud-frontend-v2.onrender.com"
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
+
+# Manejador global de excepciones para asegurar headers CORS
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Manejador global de excepciones que asegura headers CORS"""
+    logger.error(f"Error no manejado en {request.url.path}: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": "Error interno del servidor",
+            "message": str(exc),
+            "path": str(request.url.path)
+        },
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+            "Access-Control-Allow-Headers": "*"
+        }
+    )
+
+# Manejador específico para errores de validación
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Manejador de errores de validación con CORS"""
+    logger.warning(f"Error de validación en {request.url.path}: {exc}")
+    return JSONResponse(
+        status_code=422,
+        content={"error": "Error de validación", "details": str(exc)},
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+            "Access-Control-Allow-Headers": "*"
+        }
+    )
 
 ENDPOINT_CLIENTES = "https://fluvi.cl/fluviDos/GoApp/endpoints/clientes.php"
 ENDPOINT_PEDIDOS = "https://fluvi.cl/fluviDos/GoApp/endpoints/pedidos.php"
@@ -140,11 +182,11 @@ def recalibrar_factores_diarios(df_pedidos: pd.DataFrame, df_clientes: pd.DataFr
             'efectividad_historica': FACTORES_CACHE['efectividad_historica'] + [nueva_efectividad]
         })
         
-        print(f"✅ Recalibración diaria completada - Efectividad: {nueva_efectividad:.1f}%")
+        logger.info(f"Recalibración diaria completada - Efectividad: {nueva_efectividad:.1f}%")
         return factores_ajustados
         
     except Exception as e:
-        print(f"❌ Error en recalibración diaria: {e}")
+        logger.error(f"Error en recalibración diaria: {e}", exc_info=True)
         return {}
 
 def verificar_recalibracion_necesaria() -> bool:
@@ -165,7 +207,7 @@ def parse_fecha(fecha_str):
             return datetime.strptime(fecha_str.strip(), "%d-%m-%Y")
         return None
     except Exception as e:
-        print(f"Error parseando fecha '{fecha_str}': {e}")
+        logger.debug(f"Error parseando fecha '{fecha_str}': {e}")
         return None
 
 def calcularTicketPromedio(ventas, pedidos):
@@ -187,20 +229,20 @@ def parse_fecha_iso(fecha_str):
 def obtener_datos_hibridos():
     """Obtiene datos combinando JSON anterior (históricos) + nuevo JSON (actuales)"""
     try:
-        print("Obteniendo datos híbridos: histórico + actual...")
+        logger.info("Obteniendo datos híbridos: histórico + actual...")
         
         # 1. Obtener datos históricos (JSON anterior)
         response_antiguo = requests.get(ENDPOINT_PEDIDOS, headers=HEADERS, timeout=10)
         response_antiguo.raise_for_status()
         pedidos_historicos = response_antiguo.json()
-        print(f"Datos históricos obtenidos: {len(pedidos_historicos)} pedidos")
+        logger.info(f"Datos históricos obtenidos: {len(pedidos_historicos)} pedidos")
         
         # 2. Obtener datos actuales (nuevo JSON MongoDB)
         response_nuevo = requests.get(f"{ENDPOINT_PEDIDOS_NUEVO}?storeId={STORE_ID}&limit=1000", timeout=10)
         response_nuevo.raise_for_status()
         data_nuevo = response_nuevo.json()
         pedidos_actuales = data_nuevo['data']['docs'] if data_nuevo['success'] else []
-        print(f"Datos actuales obtenidos: {len(pedidos_actuales)} pedidos")
+        logger.info(f"Datos actuales obtenidos: {len(pedidos_actuales)} pedidos")
         
         # 3. Convertir datos nuevos al formato esperado
         pedidos_convertidos = []
@@ -241,14 +283,14 @@ def obtener_datos_hibridos():
         # 4. Combinar: históricos + actuales
         todos_los_pedidos = pedidos_historicos + pedidos_convertidos
         
-        print(f"Total combinado: {len(todos_los_pedidos)} pedidos")
-        print(f"  - Históricos: {len(pedidos_historicos)}")
-        print(f"  - Actuales: {len(pedidos_convertidos)}")
+        logger.info(f"Total combinado: {len(todos_los_pedidos)} pedidos")
+        logger.debug(f"  - Históricos: {len(pedidos_historicos)}")
+        logger.debug(f"  - Actuales: {len(pedidos_convertidos)}")
         
         return todos_los_pedidos
         
     except Exception as e:
-        print(f"Error obteniendo datos híbridos: {e}")
+        logger.error(f"Error obteniendo datos híbridos: {e}", exc_info=True)
         # Fallback al endpoint antiguo
         response = requests.get(ENDPOINT_PEDIDOS, headers=HEADERS, timeout=10)
         response.raise_for_status()
@@ -258,32 +300,57 @@ def obtener_datos_hibridos():
 def get_pedidos():
     """Obtener pedidos combinados (históricos + actuales) en formato original"""
     try:
-        print("Obteniendo pedidos combinados usando capa de adaptación...")
+        logger.info("Obteniendo pedidos combinados usando capa de adaptación...")
         pedidos = data_adapter.obtener_pedidos_combinados()
-        print(f"Pedidos combinados obtenidos: {len(pedidos)} registros")
+        logger.info(f"Pedidos combinados obtenidos: {len(pedidos)} registros")
+        
+        # Validar que haya datos
+        if not pedidos or len(pedidos) == 0:
+            logger.warning("No se encontraron pedidos, retornando lista vacía")
+            return []
         
         df = pd.DataFrame(pedidos)
-        print(f"Total de pedidos antes del filtro: {len(df)}")
+        logger.debug(f"Total de pedidos antes del filtro: {len(df)}")
         
         if 'nombrelocal' in df.columns:
-            df = df[df['nombrelocal'] == 'Aguas Ancud']
-            print(f"Pedidos después del filtro Aguas Ancud: {len(df)}")
-            print(f"Locales únicos en los datos: {df['nombrelocal'].unique()}")
+            df_filtrado = df[df['nombrelocal'] == 'Aguas Ancud']
+            if not df_filtrado.empty:
+                df = df_filtrado
+                logger.info(f"Pedidos después del filtro Aguas Ancud: {len(df)}")
+            else:
+                logger.warning("Filtro Aguas Ancud dejó DataFrame vacío, usando todos los pedidos")
         
-        # Convertir fechas y agregar columna cliente
+        # Validar y convertir fechas
         if 'fecha' in df.columns:
             df['fecha_parsed'] = df['fecha'].apply(parse_fecha)
             df['fecha_iso'] = df['fecha_parsed'].apply(lambda x: x.isoformat() if x else None)
+            # Validar fechas inválidas
+            fechas_invalidas = df['fecha_parsed'].isna().sum()
+            if fechas_invalidas > 0:
+                logger.warning(f"{fechas_invalidas} pedidos con fechas inválidas")
         
         # Agregar columna cliente basada en usuario
         if 'usuario' in df.columns:
             df['cliente'] = df['usuario']
+        else:
+            logger.warning("Columna 'usuario' no encontrada en pedidos")
         
-        return df.to_dict(orient='records')
+        # Validar precios
+        if 'precio' in df.columns:
+            df['precio'] = pd.to_numeric(df['precio'], errors='coerce').fillna(0)
+            precios_negativos = (df['precio'] < 0).sum()
+            if precios_negativos > 0:
+                logger.warning(f"{precios_negativos} pedidos con precios negativos")
         
+        resultado = df.to_dict(orient='records')
+        logger.info(f"Retornando {len(resultado)} pedidos validados")
+        return resultado
+        
+    except HTTPException:
+        raise
     except Exception as e:
-        print("Error al obtener pedidos combinados:", e)
-        raise HTTPException(status_code=502, detail=f"No se pudo obtener pedidos combinados: {e}")
+        logger.error(f"Error al obtener pedidos combinados: {e}", exc_info=True)
+        raise HTTPException(status_code=502, detail=f"No se pudo obtener pedidos combinados: {str(e)}")
 
 
 
@@ -291,20 +358,43 @@ def get_pedidos():
 def get_clientes():
     """Obtener clientes combinados (históricos + actuales) en formato original"""
     try:
-        print("Obteniendo clientes combinados usando capa de adaptación...")
+        logger.info("Obteniendo clientes combinados usando capa de adaptación...")
         clientes = data_adapter.obtener_clientes_combinados()
-        print(f"Clientes combinados obtenidos: {len(clientes)} registros")
+        logger.info(f"Clientes combinados obtenidos: {len(clientes)} registros")
         
-        # Si no hay clientes del endpoint antiguo, extraer de pedidos
+        # Validar que haya datos
         if not clientes:
-            print("No hay clientes del endpoint antiguo, extrayendo de pedidos...")
+            logger.warning("No hay clientes del endpoint antiguo, extrayendo de pedidos...")
             pedidos = data_adapter.obtener_pedidos_combinados()
-            clientes = extraer_clientes_de_pedidos(pedidos)
+            if pedidos:
+                clientes = extraer_clientes_de_pedidos(pedidos)
+                logger.info(f"Clientes extraídos de pedidos: {len(clientes)} registros")
+            else:
+                logger.warning("No hay pedidos disponibles para extraer clientes")
+                return []
         
-        return clientes
+        # Validar estructura de clientes
+        clientes_validos = []
+        clientes_invalidos = 0
+        for cliente in clientes:
+            if isinstance(cliente, dict):
+                # Validar campos mínimos
+                if 'id' in cliente or 'idcliente' in cliente or 'correo' in cliente or 'usuario' in cliente:
+                    clientes_validos.append(cliente)
+                else:
+                    clientes_invalidos += 1
+                    logger.debug(f"Cliente sin campos mínimos: {cliente}")
+            else:
+                clientes_invalidos += 1
+        
+        if clientes_invalidos > 0:
+            logger.warning(f"{clientes_invalidos} clientes con estructura inválida fueron omitidos")
+        
+        logger.info(f"Retornando {len(clientes_validos)} clientes validados")
+        return clientes_validos
         
     except Exception as e:
-        print("Error al obtener clientes combinados:", e)
+        logger.error(f"Error al obtener clientes combinados: {e}", exc_info=True)
         return []
 
 def extraer_clientes_de_pedidos(pedidos: List[Dict]) -> List[Dict]:
@@ -341,23 +431,8 @@ def extraer_clientes_de_pedidos(pedidos: List[Dict]) -> List[Dict]:
         return list(clientes_dict.values())
         
     except Exception as e:
-        print(f"Error extrayendo clientes de pedidos: {e}")
+        logger.error(f"Error extrayendo clientes de pedidos: {e}", exc_info=True)
         return []
-    
-    df = pd.DataFrame(pedidos)
-    if 'nombrelocal' in df.columns:
-        df = df[df['nombrelocal'].str.strip().str.lower() == 'aguas ancud']
-    if df.empty or 'usuario' not in df.columns:
-        return []
-    df['precio'] = pd.to_numeric(df['precio'], errors='coerce').fillna(0)
-    # Seleccionar el último pedido por usuario
-    df['fecha_dt'] = pd.to_datetime(df['fecha'], format='%d-%m-%Y', errors='coerce')
-    df = df.sort_values('fecha_dt', ascending=False)
-    clientes = df.drop_duplicates('usuario', keep='first')
-    # Construir la lista de clientes con monto del último pedido
-    cols = ['usuario', 'telefonou', 'dire', 'fecha', 'status', 'precio']
-    clientes = clientes[cols].rename(columns={'precio': 'monto_ultimo_pedido'}).to_dict(orient='records')
-    return clientes
 
 @app.get("/pedidos-v2", response_model=List[Dict])
 def get_pedidos_v2():
@@ -367,14 +442,18 @@ def get_pedidos_v2():
         with open('orders_migrated.json', 'r', encoding='utf-8') as f:
             orders = json.load(f)
         
-        print(f"Pedidos migrados cargados: {len(orders)} registros")
+        logger.info(f"Pedidos migrados cargados: {len(orders)} registros")
+        # Validar estructura de pedidos
+        if not isinstance(orders, list):
+            logger.warning("orders_migrated.json no contiene una lista, usando endpoint legacy")
+            return get_pedidos()
         return orders
     except FileNotFoundError:
-        print("Archivo orders_migrated.json no encontrado, usando endpoint legacy")
+        logger.warning("Archivo orders_migrated.json no encontrado, usando endpoint legacy")
         return get_pedidos()
     except Exception as e:
-        print(f"Error cargando datos migrados: {e}")
-    return get_pedidos()
+        logger.error(f"Error cargando datos migrados: {e}", exc_info=True)
+        return get_pedidos()
 
 @app.get("/kpis", response_model=Dict)
 def get_kpis():
@@ -555,7 +634,7 @@ def get_clientes_vip():
         response.raise_for_status()
         pedidos = response.json()
     except Exception as e:
-        print("Error al obtener pedidos para clientes VIP:", e)
+        logger.error(f"Error al obtener pedidos para clientes VIP: {e}", exc_info=True)
         return {"vip": [], "frecuentes": []}
     df = pd.DataFrame(pedidos)
     if 'nombrelocal' in df.columns:
@@ -592,50 +671,80 @@ def get_clientes_vip():
 def get_heatmap(mes: int = Query(None), anio: int = Query(None)):
     """Devuelve coordenadas de pedidos de Aguas Ancud para el heatmap"""
     try:
-        pedidos_resp = requests.get(ENDPOINT_PEDIDOS, headers=HEADERS, timeout=10)
-        pedidos_resp.raise_for_status()
-        pedidos = pedidos_resp.json()
+        logger.info("Obteniendo pedidos combinados para heatmap usando capa de adaptación...")
+        pedidos = data_adapter.obtener_pedidos_combinados()
+        logger.info(f"Pedidos combinados obtenidos: {len(pedidos)} registros")
     except Exception as e:
-        print("Error al obtener pedidos para heatmap:", e)
+        logger.error(f"Error al obtener pedidos para heatmap: {e}", exc_info=True)
+        return []
+    
+    if not pedidos or len(pedidos) == 0:
+        logger.warning("No se encontraron pedidos para el heatmap")
         return []
     
     df_pedidos = pd.DataFrame(pedidos)
-    print(f"Pedidos totales: {len(df_pedidos)}")
+    logger.info(f"Pedidos totales: {len(df_pedidos)}")
     
     if 'nombrelocal' in df_pedidos.columns:
         df_pedidos = df_pedidos[df_pedidos['nombrelocal'].str.strip().str.lower() == 'aguas ancud']
-    print(f"Pedidos Aguas Ancud: {len(df_pedidos)}")
+    logger.debug(f"Pedidos Aguas Ancud: {len(df_pedidos)}")
     
-    # Solo aplicar filtro de mes/año si se proporcionan ambos parámetros
+    # Aplicar filtro de fecha basado en el período
     if mes is not None and anio is not None:
+        # Intentar parsear fechas en diferentes formatos
         df_pedidos['fecha_dt'] = pd.to_datetime(df_pedidos['fecha'], format='%d-%m-%Y', errors='coerce')
-        df_pedidos = df_pedidos[(df_pedidos['fecha_dt'].dt.month == mes) & (df_pedidos['fecha_dt'].dt.year == anio)]
-        print(f"Pedidos tras filtro mes/año ({mes}/{anio}): {len(df_pedidos)}")
+        # Si falla, intentar con formato ISO
+        if df_pedidos['fecha_dt'].isna().all():
+            df_pedidos['fecha_dt'] = pd.to_datetime(df_pedidos['fecha'], errors='coerce')
+        
+        # Filtrar por mes y año
+        df_pedidos = df_pedidos[
+            (df_pedidos['fecha_dt'].dt.month == mes) & 
+            (df_pedidos['fecha_dt'].dt.year == anio)
+        ]
+        logger.debug(f"Pedidos tras filtro mes/año ({mes}/{anio}): {len(df_pedidos)}")
     else:
-        print("No se aplicó filtro de mes/año - mostrando todos los datos disponibles")
+        # Si no hay filtro, usar todos los pedidos de los últimos 12 meses por defecto
+        hoy = datetime.now()
+        fecha_limite = hoy - timedelta(days=365)
+        
+        # Intentar parsear fechas
+        df_pedidos['fecha_dt'] = pd.to_datetime(df_pedidos['fecha'], format='%d-%m-%Y', errors='coerce')
+        if df_pedidos['fecha_dt'].isna().all():
+            df_pedidos['fecha_dt'] = pd.to_datetime(df_pedidos['fecha'], errors='coerce')
+        
+        # Filtrar por fecha límite
+        df_pedidos = df_pedidos[df_pedidos['fecha_dt'] >= fecha_limite]
+        logger.debug(f"Pedidos tras filtro de 12 meses: {len(df_pedidos)}")
     
     if df_pedidos.empty:
-        print("No hay pedidos después del filtro")
+        logger.warning("No hay pedidos después del filtro")
         return []
     
     # Verificar si hay columnas de coordenadas
     coord_columns = [col for col in df_pedidos.columns if 'lat' in col.lower() or 'lon' in col.lower() or 'lng' in col.lower()]
-    print(f"Columnas de coordenadas encontradas: {coord_columns}")
+    logger.debug(f"Columnas de coordenadas encontradas: {coord_columns}")
     
     # Si no hay coordenadas reales, generar basadas en dirección
     if not coord_columns or df_pedidos[coord_columns].isnull().all().all():
-        print("No hay coordenadas reales, generando basadas en dirección...")
+        logger.info("No hay coordenadas reales, generando basadas en dirección...")
         
         if 'dire' in df_pedidos.columns:
             # Agrupar por dirección y contar pedidos
             df_pedidos['dire_norm'] = df_pedidos['dire'].str.strip().str.lower()
+            # Convertir precio a numérico antes de agrupar
+            df_pedidos['precio_numerico'] = pd.to_numeric(df_pedidos['precio'], errors='coerce').fillna(0)
+            
             direcciones_unicas = df_pedidos.groupby('dire_norm').agg({
                 'usuario': 'first',
                 'telefonou': 'first',
-                'precio': 'sum'
+                'precio_numerico': 'sum'
             }).reset_index()
             
-            print(f"Direcciones únicas encontradas: {len(direcciones_unicas)}")
+            # Renombrar para mantener consistencia
+            direcciones_unicas.rename(columns={'precio_numerico': 'precio_total'}, inplace=True)
+            
+            logger.debug(f"Direcciones únicas encontradas: {len(direcciones_unicas)}")
             
             # Generar coordenadas basadas en hash de dirección
             def generate_coordinates_from_address(address):
@@ -672,37 +781,34 @@ def get_heatmap(mes: int = Query(None), anio: int = Query(None)):
                     
                     fecha_ultimo_pedido = pedidos_direccion['fecha'].max()
                     
-                    # Debug: imprimir información del cálculo
-                    print(f"Dirección: {row['dire_norm']}")
-                    print(f"  - Pedidos encontrados: {len(pedidos_direccion)}")
-                    print(f"  - Precios: {pedidos_direccion['precio'].tolist()}")
-                    print(f"  - Ticket promedio calculado: {ticket_promedio}")
-                    print(f"  - Tipo de ticket_promedio: {type(ticket_promedio)}")
-                    print(f"  - Es NaN: {pd.isna(ticket_promedio)}")
+                    # Debug: información del cálculo (solo en modo debug)
+                    logger.debug(f"Dirección: {row['dire_norm']}")
+                    logger.debug(f"  - Pedidos encontrados: {len(pedidos_direccion)}")
                     
                     # Asegurar que los valores no sean NaN
                     ticket_promedio_final = 0 if pd.isna(ticket_promedio) else float(ticket_promedio)
                     fecha_ultimo_pedido_final = 'N/A' if pd.isna(fecha_ultimo_pedido) else str(fecha_ultimo_pedido)
+                    total_spent = float(row['precio_total']) if not pd.isna(row['precio_total']) else 0
                     
                     heatmap_data.append({
                         'lat': coords['lat'],
                         'lon': coords['lng'],
                         'address': row['dire_norm'],
-                        'user': row['usuario'],
-                        'phone': row['telefonou'],
-                        'total_spent': row['precio'],
+                        'user': row['usuario'] if not pd.isna(row['usuario']) else 'Sin usuario',
+                        'phone': row['telefonou'] if not pd.isna(row['telefonou']) else 'Sin teléfono',
+                        'total_spent': total_spent,
                         'ticket_promedio': ticket_promedio_final,
                         'fecha_ultimo_pedido': fecha_ultimo_pedido_final
                     })
             
-            print(f"Puntos de calor generados: {len(heatmap_data)}")
+            logger.info(f"Puntos de calor generados: {len(heatmap_data)}")
             return heatmap_data
         else:
-            print("No se encontró columna 'dire' en los pedidos")
+            logger.warning("No se encontró columna 'dire' en los pedidos")
             return []
     else:
         # Usar coordenadas reales
-        print("Usando coordenadas reales de los pedidos...")
+        logger.info("Usando coordenadas reales de los pedidos...")
         
         # Identificar columnas de lat y lon
         lat_col = None
@@ -717,7 +823,7 @@ def get_heatmap(mes: int = Query(None), anio: int = Query(None)):
         if lat_col and lon_col:
             # Filtrar pedidos con coordenadas válidas
             df_coords = df_pedidos[df_pedidos[lat_col].notnull() & df_pedidos[lon_col].notnull()]
-            print(f"Pedidos con coordenadas válidas: {len(df_coords)}")
+            logger.info(f"Pedidos con coordenadas válidas: {len(df_coords)}")
             
             heatmap_data = []
             for _, row in df_coords.iterrows():
@@ -735,35 +841,36 @@ def get_heatmap(mes: int = Query(None), anio: int = Query(None)):
                     
                     fecha_ultimo_pedido = pedidos_direccion['fecha'].max()
                     
-                    # Debug: imprimir información del cálculo
-                    print(f"Dirección: {direccion}")
-                    print(f"  - Pedidos encontrados: {len(pedidos_direccion)}")
-                    print(f"  - Precios: {pedidos_direccion['precio'].tolist()}")
-                    print(f"  - Ticket promedio calculado: {ticket_promedio}")
-                    print(f"  - Tipo de ticket_promedio: {type(ticket_promedio)}")
-                    print(f"  - Es NaN: {pd.isna(ticket_promedio)}")
+                    # Debug: información del cálculo (solo en modo debug)
+                    logger.debug(f"Dirección: {direccion}")
+                    logger.debug(f"  - Pedidos encontrados: {len(pedidos_direccion)}")
                     
                     # Asegurar que los valores no sean NaN
                     ticket_promedio_final = 0 if pd.isna(ticket_promedio) else float(ticket_promedio)
                     fecha_ultimo_pedido_final = 'N/A' if pd.isna(fecha_ultimo_pedido) else str(fecha_ultimo_pedido)
                     
+                    # Convertir precio a numérico
+                    precio_raw = row.get('precio', 0)
+                    total_spent = pd.to_numeric(precio_raw, errors='coerce')
+                    total_spent = float(total_spent) if not pd.isna(total_spent) else 0
+                    
                     heatmap_data.append({
                         'lat': lat,
                         'lon': lon,
-                        'address': direccion,
-                        'user': row.get('usuario', 'Sin usuario'),
-                        'phone': row.get('telefonou', 'Sin teléfono'),
-                        'total_spent': row.get('precio', 0),
+                        'address': direccion if direccion else 'Sin dirección',
+                        'user': row.get('usuario', 'Sin usuario') if not pd.isna(row.get('usuario', '')) else 'Sin usuario',
+                        'phone': row.get('telefonou', 'Sin teléfono') if not pd.isna(row.get('telefonou', '')) else 'Sin teléfono',
+                        'total_spent': total_spent,
                         'ticket_promedio': ticket_promedio_final,
                         'fecha_ultimo_pedido': fecha_ultimo_pedido_final
                     })
                 except (ValueError, TypeError):
                     continue
             
-            print(f"Puntos de calor con coordenadas reales: {len(heatmap_data)}")
+            logger.info(f"Puntos de calor con coordenadas reales: {len(heatmap_data)}")
             return heatmap_data
         else:
-            print("No se encontraron columnas de lat/lon válidas")
+            logger.warning("No se encontraron columnas de lat/lon válidas")
             return []
 
 @app.get("/factores-prediccion", response_model=Dict)
@@ -1742,80 +1849,162 @@ def get_ultimas_predicciones(dias: int = Query(7, description="Número de días 
 @app.get("/ventas-diarias", response_model=Dict)
 def get_ventas_diarias():
     """Calcular ventas diarias con comparación mensual y tendencia de 7 días usando nuevo endpoint MongoDB"""
+    respuesta_error = {
+        "ventas_hoy": 0,
+        "ventas_mismo_dia_mes_anterior": 0,
+        "porcentaje_cambio": 0,
+        "es_positivo": True,
+        "fecha_comparacion": "",
+        "tendencia_7_dias": [],
+        "tipo_comparacion": "mensual"
+    }
+    
     try:
-        print("Obteniendo ventas diarias usando datos combinados...")
-        pedidos = data_adapter.obtener_pedidos_combinados()
-        print(f"Pedidos combinados obtenidos: {len(pedidos)} registros")
+        logger.info("Obteniendo ventas diarias usando datos combinados...")
         
-        df = pd.DataFrame(pedidos)
-        if 'nombrelocal' in df.columns:
-            df = df[df['nombrelocal'] == 'Aguas Ancud']
+        # Obtener pedidos con manejo robusto de errores
+        try:
+            pedidos = data_adapter.obtener_pedidos_combinados()
+            if not pedidos:
+                logger.warning("No se obtuvieron pedidos, retornando valores por defecto")
+                return respuesta_error
+            logger.info(f"Pedidos combinados obtenidos: {len(pedidos)} registros")
+        except Exception as e:
+            logger.error(f"Error obteniendo pedidos combinados: {e}", exc_info=True)
+            return respuesta_error
         
-        if df.empty or 'fecha' not in df.columns:
+        # Convertir a DataFrame con validación
+        try:
+            df = pd.DataFrame(pedidos)
+            if df.empty:
+                logger.warning("DataFrame vacío, retornando valores por defecto")
+                return respuesta_error
+        except Exception as e:
+            logger.error(f"Error creando DataFrame: {e}", exc_info=True)
+            return respuesta_error
+        
+        # Filtrar por local
+        try:
+            if 'nombrelocal' in df.columns:
+                df_filtrado = df[df['nombrelocal'] == 'Aguas Ancud']
+                if not df_filtrado.empty:
+                    df = df_filtrado
+        except Exception as e:
+            logger.warning(f"Error filtrando por local: {e}")
+            # Continuar con todos los pedidos
+        
+        # Validar que haya columnas de fecha
+        if 'fecha' not in df.columns and 'fecha_parsed' not in df.columns:
+            logger.warning("No se encontraron columnas de fecha, retornando valores por defecto")
+            return respuesta_error
+        
+        # Convertir fechas y precios con manejo robusto
+        try:
+            if 'fecha_parsed' in df.columns:
+                df['fecha_parsed'] = pd.to_datetime(df['fecha_parsed'], errors='coerce')
+            else:
+                df['fecha_parsed'] = pd.to_datetime(df['fecha'], errors='coerce', dayfirst=True)
+                if df['fecha_parsed'].isna().all():
+                    df['fecha_parsed'] = pd.to_datetime(df['fecha'].apply(lambda x: str(x).replace('Z', '+00:00') if isinstance(x, str) else x), errors='coerce')
+            
+            # Eliminar filas sin fecha válida
+            df = df.dropna(subset=['fecha_parsed'])
+            if df.empty:
+                logger.warning("No hay fechas válidas después del parsing, retornando valores por defecto")
+                return respuesta_error
+            
+            # Convertir precios
+            if 'precio' in df.columns:
+                df['precio'] = pd.to_numeric(df['precio'], errors='coerce').fillna(0)
+            else:
+                logger.warning("No se encontró columna 'precio', usando 0")
+                df['precio'] = 0
+                
+        except Exception as e:
+            logger.error(f"Error procesando fechas/precios: {e}", exc_info=True)
+            return respuesta_error
+        
+        # Obtener fecha máxima y calcular métricas
+        try:
+            fecha_maxima = df['fecha_parsed'].max()
+            if pd.isna(fecha_maxima) or fecha_maxima is None:
+                logger.warning("No hay fecha máxima válida, retornando valores por defecto")
+                return respuesta_error
+            
+            # Asegurar que fecha_maxima sea un objeto datetime válido
+            if not isinstance(fecha_maxima, pd.Timestamp):
+                logger.warning(f"Fecha máxima no es un Timestamp válido: {type(fecha_maxima)}, retornando valores por defecto")
+                return respuesta_error
+            
+            hoy = fecha_maxima.date()
+            
+            # Ventas de hoy
+            try:
+                ventas_hoy = float(df[df['fecha_parsed'].dt.date == hoy]['precio'].sum())
+                if pd.isna(ventas_hoy):
+                    ventas_hoy = 0.0
+            except Exception as e:
+                logger.warning(f"Error calculando ventas hoy: {e}, usando 0")
+                ventas_hoy = 0.0
+            
+            # Ventas del mismo día del mes anterior
+            try:
+                mes_anterior = hoy.replace(day=1) - timedelta(days=1)
+                mismo_dia_mes_anterior = hoy.replace(month=mes_anterior.month, year=mes_anterior.year)
+                ventas_mismo_dia_mes_anterior = df[df['fecha_parsed'].dt.date == mismo_dia_mes_anterior]['precio'].sum()
+            except (ValueError, AttributeError) as e:
+                logger.warning(f"Error calculando mes anterior: {e}, usando 0")
+                ventas_mismo_dia_mes_anterior = 0
+                mismo_dia_mes_anterior = hoy
+            
+            # Calcular porcentaje de cambio
+            porcentaje_cambio = 0
+            if ventas_mismo_dia_mes_anterior > 0:
+                porcentaje_cambio = ((ventas_hoy - ventas_mismo_dia_mes_anterior) / ventas_mismo_dia_mes_anterior) * 100
+            
+            # Tendencia de 7 días
+            tendencia_7_dias = []
+            try:
+                for i in range(7):
+                    fecha_tendencia = hoy - timedelta(days=6-i)
+                    ventas_dia = df[df['fecha_parsed'].dt.date == fecha_tendencia]['precio'].sum()
+                    dia_semana = fecha_tendencia.strftime('%a')
+                    tendencia_7_dias.append({
+                        "fecha": fecha_tendencia.strftime('%d-%m'),
+                        "ventas": int(ventas_dia),
+                        "dia_semana": dia_semana
+                    })
+            except Exception as e:
+                logger.warning(f"Error calculando tendencia 7 días: {e}")
+                # Continuar con lista vacía
+            
+            # Formatear fecha de comparación de forma segura
+            try:
+                if hasattr(mismo_dia_mes_anterior, 'strftime'):
+                    fecha_comparacion_str = mismo_dia_mes_anterior.strftime('%d-%m-%Y')
+                else:
+                    fecha_comparacion_str = ""
+            except Exception as e:
+                logger.warning(f"Error formateando fecha de comparación: {e}")
+                fecha_comparacion_str = ""
+            
             return {
-                "ventas_hoy": 0,
-                "ventas_mismo_dia_mes_anterior": 0,
-                "porcentaje_cambio": 0,
-                "es_positivo": True,
-                "fecha_comparacion": "",
-                "tendencia_7_dias": [],
+                "ventas_hoy": int(ventas_hoy) if not pd.isna(ventas_hoy) else 0,
+                "ventas_mismo_dia_mes_anterior": int(ventas_mismo_dia_mes_anterior) if not pd.isna(ventas_mismo_dia_mes_anterior) else 0,
+                "porcentaje_cambio": round(float(porcentaje_cambio), 1) if not pd.isna(porcentaje_cambio) else 0.0,
+                "es_positivo": bool(porcentaje_cambio >= 0) if not pd.isna(porcentaje_cambio) else True,
+                "fecha_comparacion": fecha_comparacion_str,
+                "tendencia_7_dias": tendencia_7_dias,
                 "tipo_comparacion": "mensual"
             }
-        
-        # Convertir fechas y precios
-        df['fecha_parsed'] = df['fecha'].apply(parse_fecha)
-        df['precio'] = pd.to_numeric(df['precio'], errors='coerce').fillna(0)
-        
-        # Obtener fecha máxima de los datos
-        fecha_maxima = df['fecha_parsed'].max()
-        hoy = fecha_maxima.date()
-        
-        # Ventas de hoy
-        ventas_hoy = df[df['fecha_parsed'].dt.date == hoy]['precio'].sum()
-        
-        # Ventas del mismo día del mes anterior
-        mes_anterior = hoy.replace(day=1) - timedelta(days=1)
-        mismo_dia_mes_anterior = hoy.replace(month=mes_anterior.month, year=mes_anterior.year)
-        ventas_mismo_dia_mes_anterior = df[df['fecha_parsed'].dt.date == mismo_dia_mes_anterior]['precio'].sum()
-        
-        # Calcular porcentaje de cambio
-        porcentaje_cambio = 0
-        if ventas_mismo_dia_mes_anterior > 0:
-            porcentaje_cambio = ((ventas_hoy - ventas_mismo_dia_mes_anterior) / ventas_mismo_dia_mes_anterior) * 100
-        
-        # Tendencia de 7 días
-        tendencia_7_dias = []
-        for i in range(7):
-            fecha_tendencia = hoy - timedelta(days=6-i)
-            ventas_dia = df[df['fecha_parsed'].dt.date == fecha_tendencia]['precio'].sum()
-            dia_semana = fecha_tendencia.strftime('%a')
-            tendencia_7_dias.append({
-                "fecha": fecha_tendencia.strftime('%d-%m'),
-                "ventas": int(ventas_dia),
-                "dia_semana": dia_semana
-            })
-        
-        return {
-            "ventas_hoy": int(ventas_hoy),
-            "ventas_mismo_dia_mes_anterior": int(ventas_mismo_dia_mes_anterior),
-            "porcentaje_cambio": round(porcentaje_cambio, 1),
-            "es_positivo": porcentaje_cambio >= 0,
-            "fecha_comparacion": mismo_dia_mes_anterior.strftime('%d-%m-%Y'),
-            "tendencia_7_dias": tendencia_7_dias,
-            "tipo_comparacion": "mensual"
-        }
+            
+        except Exception as e:
+            logger.error(f"Error calculando métricas de ventas diarias: {e}", exc_info=True)
+            return respuesta_error
         
     except Exception as e:
-        print(f"Error calculando ventas diarias: {e}")
-        return {
-            "ventas_hoy": 0,
-            "ventas_mismo_dia_mes_anterior": 0,
-            "porcentaje_cambio": 0,
-            "es_positivo": True,
-            "fecha_comparacion": "",
-            "tendencia_7_dias": [],
-            "tipo_comparacion": "mensual"
-        }
+        logger.error(f"Error inesperado calculando ventas diarias: {e}", exc_info=True)
+        return respuesta_error
 
 @app.get("/ventas-semanales", response_model=Dict)
 def get_ventas_semanales():
@@ -2219,14 +2408,18 @@ def get_prediccion_inventario(dias: int = Query(7, description="Días a predecir
 def get_reporte_ejecutivo():
     """Generar reporte ejecutivo semanal automático"""
     try:
-        # Obtener datos de pedidos
-        response = requests.get(ENDPOINT_PEDIDOS, headers=HEADERS, timeout=10)
-        response.raise_for_status()
-        pedidos = response.json()
+        # Obtener datos de pedidos usando data_adapter
+        logger.info("Obteniendo pedidos combinados para reporte ejecutivo usando capa de adaptación...")
+        pedidos = data_adapter.obtener_pedidos_combinados()
+        logger.info(f"Pedidos combinados obtenidos: {len(pedidos)} registros")
+        
+        if not pedidos or len(pedidos) == 0:
+            logger.warning("No se encontraron pedidos para el reporte ejecutivo")
+            return {"error": "No hay datos suficientes para el reporte"}
         
         df = pd.DataFrame(pedidos)
         if 'nombrelocal' in df.columns:
-            df = df[df['nombrelocal'] == 'Aguas Ancud']
+            df = df[df['nombrelocal'].str.strip().str.lower() == 'aguas ancud']
         
         if df.empty:
             return {"error": "No hay datos suficientes para el reporte"}
@@ -2279,51 +2472,200 @@ def get_reporte_ejecutivo():
         
         dias_semana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
         
-        # Generar insights más precisos
+        # Análisis inteligente de tendencias
+        # Calcular tendencia semanal (últimas 4 semanas)
+        fecha_4_semanas_atras = fecha_actual - timedelta(days=28)
+        df_4_semanas = df[df['fecha_parsed'] >= fecha_4_semanas_atras]
+        
+        # Dividir en semanas
+        semanas = []
+        for i in range(4):
+            inicio_sem = fecha_actual - timedelta(days=7*(i+1))
+            fin_sem = fecha_actual - timedelta(days=7*i)
+            semana_df = df_4_semanas[(df_4_semanas['fecha_parsed'] >= inicio_sem) & (df_4_semanas['fecha_parsed'] < fin_sem)]
+            semanas.append({
+                'ventas': int(semana_df['precio'].sum()),
+                'pedidos': len(semana_df),
+                'clientes': semana_df['usuario'].nunique() if not semana_df.empty else 0
+            })
+        
+        # Detectar tendencia
+        if len(semanas) >= 2:
+            tendencia_ventas = semanas[0]['ventas'] - semanas[1]['ventas']
+            tendencia_pedidos = semanas[0]['pedidos'] - semanas[1]['pedidos']
+        else:
+            tendencia_ventas = 0
+            tendencia_pedidos = 0
+        
+        # Análisis de ticket promedio
+        ticket_promedio_semana = (ventas_semana / pedidos_semana) if pedidos_semana > 0 else 0
+        ticket_promedio_mes = (ventas_mes / pedidos_mes) if pedidos_mes > 0 else 0
+        
+        # Análisis de método de pago
+        if 'metodopago' in df_semana.columns:
+            metodos_pago = df_semana['metodopago'].value_counts().to_dict()
+            metodo_dominante = max(metodos_pago, key=metodos_pago.get) if metodos_pago else None
+        else:
+            metodo_dominante = None
+        
+        # Generar insights inteligentes basados en datos reales
         insights = []
         
-        if crecimiento_ventas > 5:
+        # 1. Insight de crecimiento (con detección de tendencia)
+        if crecimiento_ventas > 10:
+            insights.append({
+                "tipo": "positivo",
+                "titulo": "Crecimiento Excepcional",
+                "descripcion": f"Ventas +{crecimiento_ventas}% vs mes anterior - Crecimiento sostenido"
+            })
+        elif crecimiento_ventas > 5:
             insights.append({
                 "tipo": "positivo",
                 "titulo": "Crecimiento Sólido",
-                "descripcion": f"Ventas +{crecimiento_ventas}% vs mes anterior"
+                "descripcion": f"Ventas +{crecimiento_ventas}% vs mes anterior - Tendencia positiva"
+            })
+        elif crecimiento_ventas > 0:
+            insights.append({
+                "tipo": "positivo",
+                "titulo": "Crecimiento Moderado",
+                "descripcion": f"Ventas +{crecimiento_ventas}% vs mes anterior - Mantener estrategia"
+            })
+        elif crecimiento_ventas < -10:
+            insights.append({
+                "tipo": "negativo",
+                "titulo": "Caída Crítica",
+                "descripcion": f"Ventas {crecimiento_ventas}% vs mes anterior - Requiere acción inmediata"
             })
         elif crecimiento_ventas < -5:
             insights.append({
                 "tipo": "negativo",
                 "titulo": "Atención Requerida",
-                "descripcion": f"Ventas {crecimiento_ventas}% vs mes anterior"
+                "descripcion": f"Ventas {crecimiento_ventas}% vs mes anterior - Revisar estrategias"
             })
-        
-        if clientes_unicos_mes > 0:
+        elif crecimiento_ventas < 0:
             insights.append({
-                "tipo": "informativo",
-                "titulo": "Base de Clientes",
-                "descripcion": f"{clientes_unicos_mes} clientes únicos este mes"
+                "tipo": "negativo",
+                "titulo": "Ligera Disminución",
+                "descripcion": f"Ventas {crecimiento_ventas}% vs mes anterior - Monitorear tendencia"
             })
         
+        # 2. Insight de tendencia semanal
+        if len(semanas) >= 2:
+            if tendencia_ventas > 0:
+                insights.append({
+                    "tipo": "positivo",
+                    "titulo": "Aceleración Semanal",
+                    "descripcion": f"Ventas aumentaron ${tendencia_ventas:,} vs semana anterior - Momentum positivo"
+                })
+            elif tendencia_ventas < -100000:  # Caída significativa
+                insights.append({
+                    "tipo": "negativo",
+                    "titulo": "Desaceleración Semanal",
+                    "descripcion": f"Ventas disminuyeron ${abs(tendencia_ventas):,} vs semana anterior - Revisar"
+                })
+        
+        # 3. Insight de ticket promedio
+        if ticket_promedio_semana > 0:
+            if ticket_promedio_semana > ticket_promedio_mes * 1.1:
+                insights.append({
+                    "tipo": "positivo",
+                    "titulo": "Ticket Promedio Elevado",
+                    "descripcion": f"Ticket promedio ${ticket_promedio_semana:,.0f} - Clientes comprando más por pedido"
+                })
+            elif ticket_promedio_semana < ticket_promedio_mes * 0.9:
+                insights.append({
+                    "tipo": "negativo",
+                    "titulo": "Ticket Promedio Bajo",
+                    "descripcion": f"Ticket promedio ${ticket_promedio_semana:,.0f} - Oportunidad de venta cruzada"
+                })
+        
+        # 4. Insight de base de clientes
+        if clientes_unicos_mes > 0:
+            tasa_retencion = (clientes_unicos_semana / clientes_unicos_mes) * 100 if clientes_unicos_mes > 0 else 0
+            if tasa_retencion > 50:
+                insights.append({
+                    "tipo": "positivo",
+                    "titulo": "Base de Clientes Activa",
+                    "descripcion": f"{clientes_unicos_mes} clientes únicos este mes - {tasa_retencion:.0f}% activos esta semana"
+                })
+            else:
+                insights.append({
+                    "tipo": "informativo",
+                    "titulo": "Base de Clientes",
+                    "descripcion": f"{clientes_unicos_mes} clientes únicos este mes - Oportunidad de reactivación"
+                })
+        
+        # 5. Insight de día pico
         if dia_mas_ventas is not None:
             insights.append({
                 "tipo": "informativo",
-                "titulo": "Día Pico",
-                "descripcion": f"{dias_semana[dia_mas_ventas]} más activo"
+                "titulo": "Patrón de Demanda",
+                "descripcion": f"{dias_semana[dia_mas_ventas]} es el día más activo - Optimizar entregas ese día"
             })
         
-        # Recomendaciones más específicas
+        # 6. Insight de método de pago
+        if metodo_dominante:
+            porcentaje_metodo = (metodos_pago[metodo_dominante] / pedidos_semana) * 100 if pedidos_semana > 0 else 0
+            insights.append({
+                "tipo": "informativo",
+                "titulo": "Método de Pago Dominante",
+                "descripcion": f"{metodo_dominante} representa {porcentaje_metodo:.0f}% de los pedidos esta semana"
+            })
+        
+        # Recomendaciones inteligentes basadas en análisis
         recomendaciones = []
         
-        if crecimiento_ventas < 0:
+        # 1. Recomendación por crecimiento
+        if crecimiento_ventas < -10:
             recomendaciones.append({
                 "prioridad": "alta",
-                "accion": "Analizar causas",
-                "descripcion": "Revisar estrategias de ventas"
+                "accion": "Análisis Urgente de Causas",
+                "descripcion": f"Caída crítica de {abs(crecimiento_ventas)}%. Revisar: estacionalidad, competencia, calidad de servicio"
+            })
+        elif crecimiento_ventas < -5:
+            recomendaciones.append({
+                "prioridad": "alta",
+                "accion": "Revisar Estrategias de Ventas",
+                "descripcion": f"Caída de {abs(crecimiento_ventas)}%. Analizar campañas, promociones y servicio al cliente"
+            })
+        elif crecimiento_ventas > 10:
+            recomendaciones.append({
+                "prioridad": "baja",
+                "accion": "Capitalizar Crecimiento",
+                "descripcion": f"Crecimiento excepcional de +{crecimiento_ventas}%. Considerar expansión de capacidad"
             })
         
+        # 2. Recomendación por ticket promedio
+        if ticket_promedio_semana < 3000 and pedidos_semana > 0:
+            recomendaciones.append({
+                "prioridad": "media",
+                "accion": "Estrategias de Venta Cruzada",
+                "descripcion": f"Ticket promedio ${ticket_promedio_semana:,.0f}. Ofrecer promociones para múltiples bidones"
+            })
+        
+        # 3. Recomendación por clientes nuevos
+        clientes_nuevos = clientes_unicos_semana - clientes_unicos_mes + len(df_mes_anterior)
         if clientes_unicos_semana < 5:
             recomendaciones.append({
                 "prioridad": "media",
-                "accion": "Captación",
-                "descripcion": "Pocos clientes nuevos"
+                "accion": "Campañas de Captación",
+                "descripcion": f"Solo {clientes_unicos_semana} clientes únicos esta semana. Implementar estrategias de adquisición"
+            })
+        
+        # 4. Recomendación por tendencia semanal
+        if tendencia_ventas < -100000 and len(semanas) >= 2:
+            recomendaciones.append({
+                "prioridad": "alta",
+                "accion": "Reversión de Tendencia",
+                "descripcion": f"Desaceleración semanal de ${abs(tendencia_ventas):,}. Revisar operaciones y marketing"
+            })
+        
+        # 5. Recomendación general si todo está bien
+        if len(recomendaciones) == 0:
+            recomendaciones.append({
+                "prioridad": "baja",
+                "accion": "Mantener Estrategia Actual",
+                "descripcion": "Indicadores en rango aceptable. Continuar monitoreo y optimización continua"
             })
         
         # Generar resumen ejecutivo compacto
@@ -2448,14 +2790,18 @@ def generar_reporte_email(email: str = Query(..., description="Email para enviar
 def get_analisis_rentabilidad():
     """Análisis de rentabilidad avanzado con métricas detalladas basadas en datos reales de KPIs"""
     try:
-        # Obtener datos de pedidos
-        response = requests.get(ENDPOINT_PEDIDOS, headers=HEADERS, timeout=10)
-        response.raise_for_status()
-        pedidos = response.json()
+        # Obtener datos de pedidos usando data_adapter
+        logger.info("Obteniendo pedidos combinados para análisis de rentabilidad usando capa de adaptación...")
+        pedidos = data_adapter.obtener_pedidos_combinados()
+        logger.info(f"Pedidos combinados obtenidos: {len(pedidos)} registros")
+        
+        if not pedidos or len(pedidos) == 0:
+            logger.warning("No se encontraron pedidos para el análisis de rentabilidad")
+            return {"error": "No hay datos suficientes para el análisis"}
         
         df = pd.DataFrame(pedidos)
         if 'nombrelocal' in df.columns:
-            df = df[df['nombrelocal'] == 'Aguas Ancud']
+            df = df[df['nombrelocal'].str.strip().str.lower() == 'aguas ancud']
         
         if df.empty:
             return {"error": "No hay datos suficientes para el análisis"}
@@ -2466,37 +2812,122 @@ def get_analisis_rentabilidad():
         df['precio'] = pd.to_numeric(df['precio'], errors='coerce').fillna(0)
         df['cantidad'] = df['precio'] // 2000  # Mismo cálculo que KPIs
         
-        # Calcular fechas (MISMO MÉTODO QUE KPIs)
+        logger.info(f"Total de pedidos procesados: {len(df)}")
+        logger.info(f"Rango de fechas: {df['fecha_parsed'].min()} a {df['fecha_parsed'].max()}")
+        
+        # Calcular fechas - USAR LOS 2 MESES MÁS RECIENTES CON DATOS (como KPIs)
         hoy = datetime.now()
-        mes_actual = hoy.month
-        anio_actual = hoy.year
         
-        # Mes pasado
-        if mes_actual == 1:
-            mes_pasado = 12
-            anio_pasado = anio_actual - 1
+        # Obtener el mes más reciente con datos
+        df['mes_anio'] = df['fecha_parsed'].dt.to_period('M')
+        meses_con_datos = df['mes_anio'].value_counts().sort_index(ascending=False)
+        
+        logger.info(f"Meses con datos disponibles: {list(meses_con_datos.index[:5])}")
+        
+        if len(meses_con_datos) >= 2:
+            # Usar los 2 meses más recientes con datos
+            mes_reciente = meses_con_datos.index[0]
+            mes_anterior = meses_con_datos.index[1]
+            
+            # Convertir Period a datetime para filtrado
+            mes_reciente_dt = mes_reciente.to_timestamp()
+            mes_anterior_dt = mes_anterior.to_timestamp()
+            
+            mes_actual = mes_reciente_dt.month
+            anio_actual = mes_reciente_dt.year
+            mes_pasado = mes_anterior_dt.month
+            anio_pasado = mes_anterior_dt.year
+            
+            logger.info(f"Usando mes actual: {mes_actual}/{anio_actual} ({mes_reciente})")
+            logger.info(f"Usando mes pasado: {mes_pasado}/{anio_pasado} ({mes_anterior})")
+            
+            # Filtrar pedidos por mes
+            pedidos_mes = df[
+                (df['fecha_parsed'].dt.month == mes_actual) & 
+                (df['fecha_parsed'].dt.year == anio_actual)
+            ]
+            pedidos_mes_pasado = df[
+                (df['fecha_parsed'].dt.month == mes_pasado) & 
+                (df['fecha_parsed'].dt.year == anio_pasado)
+            ]
         else:
-            mes_pasado = mes_actual - 1
-            anio_pasado = anio_actual
+            # Si no hay suficientes meses, usar mes actual y pasado según fecha de hoy
+            logger.warning("No hay suficientes meses con datos, usando mes actual y pasado según fecha")
+            mes_actual = hoy.month
+            anio_actual = hoy.year
+            
+            if mes_actual == 1:
+                mes_pasado = 12
+                anio_pasado = anio_actual - 1
+            else:
+                mes_pasado = mes_actual - 1
+                anio_pasado = anio_actual
+            
+            # Filtrar pedidos por mes
+            pedidos_mes = df[(df['fecha_parsed'].dt.month == mes_actual) & (df['fecha_parsed'].dt.year == anio_actual)]
+            pedidos_mes_pasado = df[(df['fecha_parsed'].dt.month == mes_pasado) & (df['fecha_parsed'].dt.year == anio_pasado)]
         
-        # Filtrar pedidos por mes (MISMO MÉTODO QUE KPIs)
-        pedidos_mes = df[(df['fecha_parsed'].dt.month == mes_actual) & (df['fecha_parsed'].dt.year == anio_actual)]
-        pedidos_mes_pasado = df[(df['fecha_parsed'].dt.month == mes_pasado) & (df['fecha_parsed'].dt.year == anio_pasado)]
+        logger.info(f"Pedidos mes actual: {len(pedidos_mes)}, Ventas: ${pedidos_mes['precio'].sum():,}")
+        logger.info(f"Pedidos mes pasado: {len(pedidos_mes_pasado)}, Ventas: ${pedidos_mes_pasado['precio'].sum():,}")
+        
+        # Validar que haya datos suficientes
+        if len(pedidos_mes) == 0:
+            logger.warning(f"No hay pedidos para el mes actual ({mes_actual}/{anio_actual})")
+            logger.warning("Usando mes más reciente con datos disponible")
+            # Si no hay pedidos del mes actual, usar el mes más reciente disponible
+            if len(meses_con_datos) > 0:
+                mes_reciente = meses_con_datos.index[0]
+                mes_reciente_dt = mes_reciente.to_timestamp()
+                mes_actual = mes_reciente_dt.month
+                anio_actual = mes_reciente_dt.year
+                
+                # Buscar mes anterior
+                if len(meses_con_datos) > 1:
+                    mes_anterior = meses_con_datos.index[1]
+                    mes_anterior_dt = mes_anterior.to_timestamp()
+                    mes_pasado = mes_anterior_dt.month
+                    anio_pasado = mes_anterior_dt.year
+                else:
+                    # Si solo hay un mes, usar el anterior según fecha
+                    if mes_actual == 1:
+                        mes_pasado = 12
+                        anio_pasado = anio_actual - 1
+                    else:
+                        mes_pasado = mes_actual - 1
+                        anio_pasado = anio_actual
+                
+                # Re-filtrar con el mes correcto
+                pedidos_mes = df[
+                    (df['fecha_parsed'].dt.month == mes_actual) & 
+                    (df['fecha_parsed'].dt.year == anio_actual)
+                ]
+                pedidos_mes_pasado = df[
+                    (df['fecha_parsed'].dt.month == mes_pasado) & 
+                    (df['fecha_parsed'].dt.year == anio_pasado)
+                ]
+                logger.info(f"Re-filtrado: Mes actual: {mes_actual}/{anio_actual} ({len(pedidos_mes)} pedidos)")
+                logger.info(f"Re-filtrado: Mes pasado: {mes_pasado}/{anio_pasado} ({len(pedidos_mes_pasado)} pedidos)")
         
         # Calcular métricas básicas (MISMO MÉTODO QUE KPIs)
-        ventas_mes = pedidos_mes['precio'].sum()
-        ventas_mes_pasado = pedidos_mes_pasado['precio'].sum()
+        ventas_mes = pedidos_mes['precio'].sum() if not pedidos_mes.empty else 0
+        ventas_mes_pasado = pedidos_mes_pasado['precio'].sum() if not pedidos_mes_pasado.empty else 0
+        
+        logger.info(f"Ventas mes actual: ${ventas_mes:,.0f}")
+        logger.info(f"Ventas mes pasado: ${ventas_mes_pasado:,.0f}")
         
         # Calcular bidones basado en ordenpedido
-        if 'ordenpedido' in pedidos_mes.columns:
+        if 'ordenpedido' in pedidos_mes.columns and not pedidos_mes.empty:
             total_bidones_mes = pedidos_mes['ordenpedido'].astype(str).str.replace(r'[^\d]', '', regex=True).astype(int).sum()
         else:
             total_bidones_mes = len(pedidos_mes)  # Fallback: 1 bidón por pedido
         
-        if 'ordenpedido' in pedidos_mes_pasado.columns:
+        if 'ordenpedido' in pedidos_mes_pasado.columns and not pedidos_mes_pasado.empty:
             total_bidones_mes_pasado = pedidos_mes_pasado['ordenpedido'].astype(str).str.replace(r'[^\d]', '', regex=True).astype(int).sum()
         else:
             total_bidones_mes_pasado = len(pedidos_mes_pasado)  # Fallback: 1 bidón por pedido
+        
+        logger.info(f"Total bidones mes actual: {total_bidones_mes}")
+        logger.info(f"Total bidones mes pasado: {total_bidones_mes_pasado}")
         
         # CÁLCULOS REALES DE COSTOS (MISMO MÉTODO QUE KPIs)
         cuota_camion = 260000  # Costo fijo mensual del camión
@@ -2532,11 +2963,39 @@ def get_analisis_rentabilidad():
         margen_bruto = ventas_mes - costos_variables
         margen_neto = utilidad  # Usar la utilidad calculada por KPIs
         
-        margen_bruto_porcentaje = round((margen_bruto / ventas_mes) * 100, 1) if ventas_mes > 0 else 0
-        margen_neto_porcentaje = round((margen_neto / ventas_mes) * 100, 1) if ventas_mes > 0 else 0
+        # Validar que haya ventas antes de calcular porcentajes
+        if ventas_mes == 0:
+            logger.warning("⚠️ Ventas del mes actual = $0 - Verificando datos disponibles...")
+            logger.warning(f"Pedidos encontrados: {len(pedidos_mes)}")
+            logger.warning(f"Rango de fechas disponible: {df['fecha_parsed'].min()} a {df['fecha_parsed'].max()}")
         
-        # ROI mensual REAL
-        roi_mensual = round((margen_neto / (costos_totales)) * 100, 1) if costos_totales > 0 else 0
+        # Validar que los cálculos sean razonables antes de generar insights
+        if ventas_mes > 0:
+            margen_bruto_porcentaje = round((margen_bruto / ventas_mes) * 100, 1)
+            margen_neto_porcentaje = round((margen_neto / ventas_mes) * 100, 1)
+            
+            # Asegurar que los valores estén en rango razonable (validación)
+            margen_neto_porcentaje = max(-100, min(100, margen_neto_porcentaje))  # Entre -100% y 100%
+            
+            # ROI mensual REAL (solo si hay ventas)
+            roi_mensual = round((margen_neto / (costos_totales)) * 100, 1) if costos_totales > 0 else 0
+            roi_mensual = max(-100, min(200, roi_mensual))  # Entre -100% y 200%
+        else:
+            # Si no hay ventas, no calcular porcentajes (evitar valores engañosos)
+            logger.warning("No hay ventas - No se calculan márgenes ni ROI")
+            margen_bruto_porcentaje = 0
+            margen_neto_porcentaje = 0
+            roi_mensual = 0
+        
+        logger.info(f"=== RESUMEN DE RENTABILIDAD ===")
+        logger.info(f"Ventas mes: ${ventas_mes:,.0f}")
+        logger.info(f"Costos totales: ${costos_totales:,.0f}")
+        logger.info(f"Utilidad: ${utilidad:,.0f}")
+        logger.info(f"Margen neto: ${margen_neto:,.0f} ({margen_neto_porcentaje}%)")
+        logger.info(f"ROI mensual (actual): {roi_mensual}%")
+        logger.info(f"Ventas trimestre: ${ventas_trimestre:,.0f}")
+        logger.info(f"Punto de equilibrio: {punto_equilibrio} bidones (${punto_equilibrio * precio_venta_bidon:,})")
+        logger.info(f"===============================")
         
         # Análisis por cliente REAL
         clientes_unicos = pedidos_mes['usuario'].nunique() if not pedidos_mes.empty else 0
@@ -2551,33 +3010,88 @@ def get_analisis_rentabilidad():
         # Análisis de eficiencia REAL
         eficiencia_operacional = round((margen_neto / ventas_mes) * 100, 1) if ventas_mes > 0 else 0
         
+        # Asegurar que eficiencia esté en rango razonable
+        eficiencia_operacional = max(-100, min(100, eficiencia_operacional))  # Entre -100% y 100%
+        
         # === NUEVOS ANÁLISIS AVANZADOS ===
         
         # 1. CRECIMIENTO MENSUAL VS TRIMESTRAL
-        # Calcular últimos 3 meses
-        if mes_actual >= 3:
-            mes_3_atras = mes_actual - 2
-            mes_2_atras = mes_actual - 1
-            anio_3_atras = anio_actual
-            anio_2_atras = anio_actual
-        else:
-            mes_3_atras = 12 + (mes_actual - 2)
-            mes_2_atras = 12 + (mes_actual - 1)
-            anio_3_atras = anio_actual - 1
-            anio_2_atras = anio_actual - 1
+        # Usar meses con datos disponibles, no meses calendario
         
-        # Filtrar por meses
-        pedidos_mes_3_atras = df[(df['fecha_parsed'].dt.month == mes_3_atras) & (df['fecha_parsed'].dt.year == anio_3_atras)]
-        pedidos_mes_2_atras = df[(df['fecha_parsed'].dt.month == mes_2_atras) & (df['fecha_parsed'].dt.year == anio_2_atras)]
-        
-        ventas_mes_3_atras = pedidos_mes_3_atras['precio'].sum()
-        ventas_mes_2_atras = pedidos_mes_2_atras['precio'].sum()
-        
-        # Crecimiento mensual vs trimestral
+        # Crecimiento mensual: mes actual vs mes pasado (ya calculados con datos disponibles)
         crecimiento_mensual = round(((ventas_mes - ventas_mes_pasado) / ventas_mes_pasado) * 100, 1) if ventas_mes_pasado > 0 else 0
-        ventas_trimestre = ventas_mes + ventas_mes_pasado + ventas_mes_2_atras
-        ventas_trimestre_anterior = ventas_mes_3_atras + ventas_mes_pasado + ventas_mes_2_atras
+        
+        logger.info(f"Crecimiento mensual calculado: {crecimiento_mensual}% (ventas_mes: ${ventas_mes:,.0f}, ventas_mes_pasado: ${ventas_mes_pasado:,.0f})")
+        
+        # Trimestre actual: usar los 3 meses más recientes con datos disponibles
+        meses_trimestre_actual = meses_con_datos.head(3) if len(meses_con_datos) >= 3 else meses_con_datos
+        
+        logger.info(f"Calculando ventas trimestre usando {len(meses_trimestre_actual)} meses más recientes")
+        
+        ventas_trimestre = 0
+        for mes_period in meses_trimestre_actual.index:
+            mes_dt = mes_period.to_timestamp()
+            pedidos_mes_trimestre = df[
+                (df['fecha_parsed'].dt.month == mes_dt.month) & 
+                (df['fecha_parsed'].dt.year == mes_dt.year)
+            ]
+            ventas_mes_trimestre = pedidos_mes_trimestre['precio'].sum()
+            ventas_trimestre += ventas_mes_trimestre
+            logger.info(f"  Mes {mes_dt.month}/{mes_dt.year}: {len(pedidos_mes_trimestre)} pedidos, ${ventas_mes_trimestre:,.0f} ventas")
+        
+        logger.info(f"Total ventas trimestre: ${ventas_trimestre:,.0f}")
+        
+        # Trimestre anterior: usar los siguientes 3 meses más recientes (meses 4-6)
+        ventas_trimestre_anterior = 0
+        if len(meses_con_datos) >= 6:
+            # Si hay 6 o más meses, usar meses 4-6 para trimestre anterior
+            meses_trimestre_anterior = meses_con_datos.iloc[3:6]
+            for mes_period in meses_trimestre_anterior.index:
+                mes_dt = mes_period.to_timestamp()
+                pedidos_mes_trimestre_ant = df[
+                    (df['fecha_parsed'].dt.month == mes_dt.month) & 
+                    (df['fecha_parsed'].dt.year == mes_dt.year)
+                ]
+                ventas_trimestre_anterior += pedidos_mes_trimestre_ant['precio'].sum()
+        elif len(meses_con_datos) >= 4:
+            # Si hay 4-5 meses, usar meses 4+ para trimestre anterior
+            meses_trimestre_anterior = meses_con_datos.iloc[3:]
+            for mes_period in meses_trimestre_anterior.index:
+                mes_dt = mes_period.to_timestamp()
+                pedidos_mes_trimestre_ant = df[
+                    (df['fecha_parsed'].dt.month == mes_dt.month) & 
+                    (df['fecha_parsed'].dt.year == mes_dt.year)
+                ]
+                ventas_trimestre_anterior += pedidos_mes_trimestre_ant['precio'].sum()
+        else:
+            # Si hay menos de 4 meses, calcular trimestre anterior basado en promedio
+            # Usar promedio mensual del trimestre actual para estimar trimestre anterior
+            promedio_mensual_trimestre = ventas_trimestre / len(meses_trimestre_actual) if len(meses_trimestre_actual) > 0 else 0
+            ventas_trimestre_anterior = int(promedio_mensual_trimestre * 3)
+            logger.warning(f"Solo hay {len(meses_con_datos)} meses con datos, estimando trimestre anterior basado en promedio")
+        
+        # Asegurar que ventas_trimestre sea un número entero
+        ventas_trimestre = int(ventas_trimestre) if ventas_trimestre >= 0 else 0
+        ventas_trimestre_anterior = int(ventas_trimestre_anterior) if ventas_trimestre_anterior >= 0 else 0
+        
+        # Debug: verificar que ventas_trimestre tenga datos
+        if ventas_trimestre == 0 and len(meses_trimestre_actual) > 0:
+            logger.error(f"⚠️ ERROR: ventas_trimestre es 0 pero hay {len(meses_trimestre_actual)} meses con datos")
+            for mes_period in meses_trimestre_actual.index:
+                mes_dt = mes_period.to_timestamp()
+                pedidos_debug = df[
+                    (df['fecha_parsed'].dt.month == mes_dt.month) & 
+                    (df['fecha_parsed'].dt.year == mes_dt.year)
+                ]
+                ventas_debug = pedidos_debug['precio'].sum()
+                logger.error(f"  Mes {mes_dt.month}/{mes_dt.year}: {len(pedidos_debug)} pedidos, ${ventas_debug:,.0f} ventas")
+        
+        # Calcular crecimiento trimestral
         crecimiento_trimestral = round(((ventas_trimestre - ventas_trimestre_anterior) / ventas_trimestre_anterior) * 100, 1) if ventas_trimestre_anterior > 0 else 0
+        
+        logger.info(f"Crecimiento calculado - Mensual: {crecimiento_mensual}%, Trimestral: {crecimiento_trimestral}%")
+        logger.info(f"Ventas trimestre actual: ${ventas_trimestre:,} (usando {len(meses_trimestre_actual)} meses)")
+        logger.info(f"Ventas trimestre anterior: ${ventas_trimestre_anterior:,}")
         
         # 2. ESTACIONALIDAD (VERANO VS INVIERNO)
         # Verano: Diciembre, Enero, Febrero (meses 12, 1, 2)
@@ -2616,7 +3130,33 @@ def get_analisis_rentabilidad():
         ventas_por_zona = pedidos_mes.groupby('zona')['precio'].sum().to_dict()
         
         # 4. PROYECCIÓN DE VENTAS PRÓXIMOS 3 MESES
-        tendencia_mensual = (ventas_mes - ventas_mes_pasado) / ventas_mes_pasado if ventas_mes_pasado > 0 else 0
+        # Calcular promedio histórico de ventas mensuales para proyecciones más precisas
+        ventas_promedio_historico = 0
+        if len(meses_con_datos) > 0:
+            # Calcular promedio de ventas de todos los meses con datos disponibles
+            total_ventas_historico = 0
+            for mes_period in meses_con_datos.index:
+                mes_dt = mes_period.to_timestamp()
+                pedidos_mes_hist = df[
+                    (df['fecha_parsed'].dt.month == mes_dt.month) & 
+                    (df['fecha_parsed'].dt.year == mes_dt.year)
+                ]
+                total_ventas_historico += pedidos_mes_hist['precio'].sum()
+            ventas_promedio_historico = total_ventas_historico / len(meses_con_datos)
+            logger.info(f"Promedio histórico de ventas: ${ventas_promedio_historico:,.0f} (basado en {len(meses_con_datos)} meses)")
+        
+        # Calcular tendencia mensual (asegurar que no sea 0 si hay datos)
+        if ventas_mes_pasado > 0:
+            tendencia_mensual = (ventas_mes - ventas_mes_pasado) / ventas_mes_pasado
+        elif ventas_mes > 0:
+            # Si no hay mes pasado pero sí hay mes actual, asumir crecimiento del 5%
+            tendencia_mensual = 0.05
+        elif ventas_promedio_historico > 0:
+            # Si no hay datos recientes pero sí histórico, usar tendencia neutral
+            tendencia_mensual = 0
+        else:
+            # Si no hay datos en absoluto, usar tendencia neutral
+            tendencia_mensual = 0
         
         mes_proyeccion = mes_actual + 1
         if mes_proyeccion > 12:
@@ -2624,107 +3164,391 @@ def get_analisis_rentabilidad():
         
         factor_estacional_proyeccion = 1.2 if mes_proyeccion in [12, 1, 2] else 0.9 if mes_proyeccion in [6, 7, 8] else 1.0
         
-        proyeccion_mes_1 = int(ventas_mes * (1 + tendencia_mensual) * factor_estacional_proyeccion)
+        # Usar ventas del mes actual si está disponible, sino usar promedio histórico
+        if ventas_mes > 0:
+            ventas_base_proyeccion = ventas_mes
+        elif ventas_promedio_historico > 0:
+            ventas_base_proyeccion = ventas_promedio_historico
+            logger.info(f"Usando promedio histórico (${ventas_base_proyeccion:,.0f}) para proyecciones ya que no hay ventas del mes actual")
+        else:
+            # Solo como último recurso, usar mes pasado o un valor mínimo
+            ventas_base_proyeccion = max(ventas_mes_pasado, 1000000)
+            logger.warning(f"Usando valor por defecto (${ventas_base_proyeccion:,.0f}) para proyecciones - no hay datos históricos")
+        
+        proyeccion_mes_1 = int(ventas_base_proyeccion * (1 + tendencia_mensual) * factor_estacional_proyeccion)
         proyeccion_mes_2 = int(proyeccion_mes_1 * (1 + tendencia_mensual * 0.8))
         proyeccion_mes_3 = int(proyeccion_mes_2 * (1 + tendencia_mensual * 0.6))
+        
+        logger.info(f"Proyecciones calculadas - Mes 1: ${proyeccion_mes_1:,}, Mes 2: ${proyeccion_mes_2:,}, Mes 3: ${proyeccion_mes_3:,}")
+        
+        # Calcular ROI proyectado basado en proyección de ventas
+        # Proyección de costos: calcular basado en proyección de ventas
+        if proyeccion_mes_1 > 0:
+            # Calcular bidones proyectados basado en proyección de ventas
+            bidones_proyectados = int(proyeccion_mes_1 / precio_venta_bidon)
+            costos_variables_proyectados = costo_tapa_con_iva * bidones_proyectados
+            costos_totales_proyectados = cuota_camion + costos_variables_proyectados
+            utilidad_proyectada = proyeccion_mes_1 - costos_totales_proyectados
+            roi_proyectado = round((utilidad_proyectada / costos_totales_proyectados) * 100, 1) if costos_totales_proyectados > 0 else 0
+            roi_proyectado = max(-100, min(200, roi_proyectado))  # Entre -100% y 200%
+            logger.info(f"ROI proyectado calculado: {roi_proyectado}% (ventas proyectadas: ${proyeccion_mes_1:,}, costos: ${costos_totales_proyectados:,}, utilidad: ${utilidad_proyectada:,})")
+        else:
+            roi_proyectado = 0
+            logger.warning("No se puede calcular ROI proyectado - proyección de ventas es 0")
         
         # 5. PUNTO DE EQUILIBRIO DINÁMICO
         punto_equilibrio_optimista = int(round(cuota_camion * 0.9 / (precio_venta_bidon * 1.1 - costo_tapa_con_iva * 0.95)))
         punto_equilibrio_pesimista = int(round(cuota_camion * 1.1 / (precio_venta_bidon * 0.9 - costo_tapa_con_iva * 1.05)))
         
         # 6. ESCENARIOS DE RENTABILIDAD
-        ventas_optimista = int(ventas_mes * 1.2)
+        # Usar ventas reales del mes actual o promedio histórico para escenarios
+        if ventas_mes > 0:
+            ventas_base_escenarios = ventas_mes
+        elif ventas_promedio_historico > 0:
+            ventas_base_escenarios = ventas_promedio_historico
+            logger.info(f"Usando promedio histórico (${ventas_base_escenarios:,.0f}) para escenarios de rentabilidad")
+        elif ventas_mes_pasado > 0:
+            ventas_base_escenarios = ventas_mes_pasado
+            logger.info(f"Usando mes pasado (${ventas_base_escenarios:,.0f}) para escenarios de rentabilidad")
+        else:
+            # Solo como último recurso, usar punto de equilibrio
+            ventas_base_escenarios = punto_equilibrio * precio_venta_bidon
+            logger.warning(f"Usando punto de equilibrio (${ventas_base_escenarios:,.0f}) para escenarios - no hay datos históricos")
+        
+        # Escenario optimista: +20% ventas, -10% costos
+        ventas_optimista = int(ventas_base_escenarios * 1.2)
         costos_optimista = int(costos_totales * 0.9)
         utilidad_optimista = ventas_optimista - costos_optimista
         margen_optimista = round((utilidad_optimista / ventas_optimista) * 100, 1) if ventas_optimista > 0 else 0
         
-        ventas_pesimista = int(ventas_mes * 0.8)
+        # Escenario pesimista: -20% ventas, +10% costos
+        ventas_pesimista = int(ventas_base_escenarios * 0.8)
         costos_pesimista = int(costos_totales * 1.1)
         utilidad_pesimista = ventas_pesimista - costos_pesimista
         margen_pesimista = round((utilidad_pesimista / ventas_pesimista) * 100, 1) if ventas_pesimista > 0 else 0
         
+        logger.info(f"Escenarios - Optimista: ${ventas_optimista:,} (margen: {margen_optimista}%), Actual: ${ventas_mes:,} (margen: {margen_neto_porcentaje}%), Pesimista: ${ventas_pesimista:,} (margen: {margen_pesimista}%)")
+        
 
         
-        # Generar insights REALES
-        insights = []
-        
-        if margen_neto_porcentaje > 15:
-            insights.append({
-                "tipo": "positivo",
-                "titulo": "Rentabilidad Sólida",
-                "descripcion": f"Margen neto del {margen_neto_porcentaje}% - Excelente gestión"
+        # Calcular tendencias históricas para insights inteligentes
+        # Obtener datos de meses anteriores para comparación
+        meses_comparacion = []
+        for i in range(1, 4):  # Últimos 3 meses adicionales
+            if mes_actual > i:
+                mes_comp = mes_actual - i
+                anio_comp = anio_actual
+            else:
+                mes_comp = 12 + (mes_actual - i)
+                anio_comp = anio_actual - 1
+            
+            pedidos_comp = df[(df['fecha_parsed'].dt.month == mes_comp) & (df['fecha_parsed'].dt.year == anio_comp)]
+            ventas_comp = pedidos_comp['precio'].sum()
+            meses_comparacion.append({
+                'mes': mes_comp,
+                'anio': anio_comp,
+                'ventas': ventas_comp,
+                'pedidos': len(pedidos_comp)
             })
-        elif margen_neto_porcentaje < 5:
-            insights.append({
+        
+        # Calcular tendencia de margen (comparar con mes anterior)
+        if len(meses_comparacion) > 0:
+            ventas_mes_anterior_comp = meses_comparacion[0]['ventas']
+            if ventas_mes_anterior_comp > 0:
+                # Calcular margen aproximado del mes anterior
+                bidones_mes_anterior_comp = len(meses_comparacion[0]['pedidos'])  # Aproximación
+                costos_mes_anterior_comp = cuota_camion + (costo_tapa_con_iva * bidones_mes_anterior_comp)
+                utilidad_mes_anterior_comp = ventas_mes_anterior_comp - costos_mes_anterior_comp
+                margen_mes_anterior_comp = (utilidad_mes_anterior_comp / ventas_mes_anterior_comp) * 100 if ventas_mes_anterior_comp > 0 else 0
+                tendencia_margen = margen_neto_porcentaje - margen_mes_anterior_comp
+            else:
+                tendencia_margen = 0
+        else:
+            tendencia_margen = 0
+        
+        # Validar que haya datos suficientes antes de generar insights
+        if ventas_mes == 0:
+            logger.warning("No hay ventas del mes - Generando insight informativo")
+            insights = [{
                 "tipo": "negativo",
-                "titulo": "Rentabilidad Crítica",
-                "descripcion": f"Margen neto del {margen_neto_porcentaje}% - Requiere atención"
-            })
+                "titulo": "Sin Datos del Mes Actual",
+                "descripcion": f"No se encontraron pedidos para el mes {mes_actual}/{anio_actual}. El sistema está usando el mes más reciente con datos disponible. Verifique los datos en la base de datos."
+            }]
+        else:
+            # Generar insights inteligentes con detección de tendencias
+            insights = []
         
-        if roi_mensual > 10:
-            insights.append({
-                "tipo": "positivo",
-                "titulo": "ROI Competitivo",
-                "descripcion": f"Retorno del {roi_mensual}% - Buen rendimiento"
-            })
-        elif roi_mensual < 5:
-            insights.append({
-                "tipo": "negativo",
-                "titulo": "ROI Bajo",
-                "descripcion": f"Retorno del {roi_mensual}% - Necesita optimización"
-            })
-        
-        if ventas_mes > punto_equilibrio * precio_venta_bidon:
-            insights.append({
-                "tipo": "positivo",
-                "titulo": "Sobre Punto de Equilibrio",
-                "descripcion": f"${ventas_mes - (punto_equilibrio * precio_venta_bidon):,} sobre equilibrio - Rentable"
-            })
+        # 1. INSIGHT: Margen Neto (con detección de tendencia) - Solo si hay ventas
+        if ventas_mes > 0 and margen_neto_porcentaje > 15:
+            if tendencia_margen > 2:
+                insights.append({
+                    "tipo": "positivo",
+                    "titulo": "Rentabilidad Sólida en Mejora",
+                    "descripcion": f"Margen neto del {margen_neto_porcentaje}% (+{tendencia_margen:.1f}% vs mes anterior) - Excelente gestión financiera"
+                })
+            else:
+                insights.append({
+                    "tipo": "positivo",
+                    "titulo": "Rentabilidad Sólida",
+                    "descripcion": f"Margen neto del {margen_neto_porcentaje}% - Excelente gestión financiera"
+                })
+        elif margen_neto_porcentaje >= 10:
+            if tendencia_margen > 1:
+                insights.append({
+                    "tipo": "positivo",
+                    "titulo": "Rentabilidad en Mejora",
+                    "descripcion": f"Margen neto del {margen_neto_porcentaje}% (+{tendencia_margen:.1f}% vs mes anterior) - Tendencia positiva"
+                })
+            elif tendencia_margen < -1:
+                insights.append({
+                    "tipo": "negativo",
+                    "titulo": "Rentabilidad en Deterioro",
+                    "descripcion": f"Margen neto del {margen_neto_porcentaje}% ({tendencia_margen:.1f}% vs mes anterior) - Requiere atención"
+                })
+            else:
+                insights.append({
+                    "tipo": "positivo",
+                    "titulo": "Rentabilidad Moderada",
+                    "descripcion": f"Margen neto del {margen_neto_porcentaje}% - Rentabilidad aceptable, con potencial de mejora"
+                })
+        elif margen_neto_porcentaje >= 5:
+            if tendencia_margen < -2:
+                insights.append({
+                    "tipo": "negativo",
+                    "titulo": "Rentabilidad Baja en Deterioro",
+                    "descripcion": f"Margen neto del {margen_neto_porcentaje}% ({tendencia_margen:.1f}% vs mes anterior) - Acción requerida"
+                })
+            else:
+                insights.append({
+                    "tipo": "negativo",
+                    "titulo": "Rentabilidad Baja",
+                    "descripcion": f"Margen neto del {margen_neto_porcentaje}% - Margen reducido, requiere optimización"
+                })
         else:
             insights.append({
                 "tipo": "negativo",
-                "titulo": "Bajo Punto de Equilibrio",
-                "descripcion": f"Faltan ${(punto_equilibrio * precio_venta_bidon) - ventas_mes:,} para equilibrio"
+                "titulo": "Rentabilidad Crítica",
+                "descripcion": f"Margen neto del {margen_neto_porcentaje}% - Requiere atención inmediata"
             })
         
-        # Análisis de eficiencia operacional
-        if eficiencia_operacional > 10:
-            insights.append({
-                "tipo": "positivo",
-                "titulo": "Eficiencia Operacional Alta",
-                "descripcion": f"Eficiencia del {eficiencia_operacional}% - Operación optimizada"
-            })
+            # 2. INSIGHT: ROI Mensual (con todos los rangos) - Solo si hay ventas
+            if ventas_mes > 0:
+                if roi_mensual > 10:
+                    insights.append({
+                        "tipo": "positivo",
+                        "titulo": "ROI Competitivo",
+                        "descripcion": f"Retorno del {roi_mensual}% - Buen rendimiento sobre inversión"
+                    })
+                elif roi_mensual >= 8:
+                    insights.append({
+                        "tipo": "positivo",
+                        "titulo": "ROI Moderado",
+                        "descripcion": f"Retorno del {roi_mensual}% - Rendimiento aceptable, posibilidad de optimización"
+                    })
+                elif roi_mensual >= 5:
+                    insights.append({
+                        "tipo": "negativo",
+                        "titulo": "ROI Bajo",
+                        "descripcion": f"Retorno del {roi_mensual}% - Requiere mejoras operativas"
+                    })
+                elif roi_mensual < 5:
+                    insights.append({
+                        "tipo": "negativo",
+                        "titulo": "ROI Crítico",
+                        "descripcion": f"Retorno del {roi_mensual}% - Necesita optimización urgente"
+                    })
+            
+            # 3. INSIGHT: Crecimiento Mensual vs Trimestral (nuevo) - Solo si hay ventas
+            if ventas_mes > 0 and ventas_mes_pasado > 0:
+                if crecimiento_mensual > crecimiento_trimestral * 1.5:
+                    insights.append({
+                        "tipo": "positivo",
+                        "titulo": "Aceleración de Crecimiento",
+                        "descripcion": f"Crecimiento mensual ({crecimiento_mensual}%) supera significativamente al trimestral ({crecimiento_trimestral}%) - Momentum positivo"
+                    })
+                elif crecimiento_mensual < crecimiento_trimestral * 0.5:
+                    insights.append({
+                        "tipo": "negativo",
+                        "titulo": "Desaceleración de Crecimiento",
+                        "descripcion": f"Crecimiento mensual ({crecimiento_mensual}%) por debajo del trimestral ({crecimiento_trimestral}%) - Revisar estrategias"
+                    })
+            
+            # 4. INSIGHT: Punto de Equilibrio (con análisis de cercanía) - Solo si hay ventas
+            if ventas_mes > 0:
+                diferencia_equilibrio = ventas_mes - (punto_equilibrio * precio_venta_bidon)
+                porcentaje_equilibrio = (ventas_mes / (punto_equilibrio * precio_venta_bidon)) * 100 if punto_equilibrio > 0 else 0
+                
+                if diferencia_equilibrio > 0:
+                    if porcentaje_equilibrio > 150:
+                        insights.append({
+                            "tipo": "positivo",
+                            "titulo": "Muy Sobre Punto de Equilibrio",
+                            "descripcion": f"${diferencia_equilibrio:,} sobre equilibrio ({porcentaje_equilibrio:.0f}%) - Operación muy rentable"
+                        })
+                    else:
+                        insights.append({
+                            "tipo": "positivo",
+                            "titulo": "Sobre Punto de Equilibrio",
+                            "descripcion": f"${diferencia_equilibrio:,} sobre equilibrio - Operación rentable"
+                        })
+                elif porcentaje_equilibrio >= 90:
+                    insights.append({
+                        "tipo": "negativo",
+                        "titulo": "Cerca del Punto de Equilibrio",
+                        "descripcion": f"Faltan ${abs(diferencia_equilibrio):,} para equilibrio ({porcentaje_equilibrio:.0f}%) - Riesgo de pérdidas"
+                    })
+                else:
+                    insights.append({
+                        "tipo": "negativo",
+                        "titulo": "Bajo Punto de Equilibrio",
+                        "descripcion": f"Faltan ${abs(diferencia_equilibrio):,} para equilibrio ({porcentaje_equilibrio:.0f}%) - Operación no rentable"
+                    })
+            
+            # 5. INSIGHT: Eficiencia Operacional (con todos los rangos) - Solo si hay ventas
+            if ventas_mes > 0:
+                if eficiencia_operacional > 10:
+                    insights.append({
+                        "tipo": "positivo",
+                        "titulo": "Eficiencia Operacional Alta",
+                        "descripcion": f"Eficiencia del {eficiencia_operacional}% - Operación optimizada"
+                    })
+                elif eficiencia_operacional >= 5:
+                    insights.append({
+                        "tipo": "negativo",
+                        "titulo": "Eficiencia Operacional Moderada",
+                        "descripcion": f"Eficiencia del {eficiencia_operacional}% - Hay margen para mejorar procesos"
+                    })
+                else:
+                    insights.append({
+                        "tipo": "negativo",
+                        "titulo": "Eficiencia Operacional Baja",
+                        "descripcion": f"Eficiencia del {eficiencia_operacional}% - Requiere revisión de procesos operativos"
+                    })
+            
+            # 6. INSIGHT: Estacionalidad (nuevo) - Solo si hay datos suficientes
+            if ventas_verano > 0 or ventas_invierno > 0:
+                if factor_estacional > 1.2:
+                    insights.append({
+                        "tipo": "informativo",
+                        "titulo": "Patrón Estacional Detectado",
+                        "descripcion": f"Ventas de verano {factor_estacional:.1f}x mayores que invierno - Planificar para estacionalidad"
+                    })
+                elif factor_estacional < 0.8:
+                    insights.append({
+                        "tipo": "informativo",
+                        "titulo": "Estacionalidad Inversa",
+                        "descripcion": f"Ventas de invierno superan verano - Oportunidad de marketing en temporada baja"
+                    })
+            
+            # 7. INSIGHT: Zona de mayor crecimiento (nuevo) - Solo si hay ventas
+            if ventas_mes > 0 and ventas_por_zona:
+                zona_max = max(ventas_por_zona, key=ventas_por_zona.get)
+                ventas_zona_max = ventas_por_zona[zona_max]
+                porcentaje_zona = (ventas_zona_max / ventas_mes) * 100 if ventas_mes > 0 else 0
+                if porcentaje_zona > 40:
+                    insights.append({
+                        "tipo": "informativo",
+                        "titulo": "Zona de Mayor Concentración",
+                        "descripcion": f"{zona_max} concentra {porcentaje_zona:.0f}% de las ventas - Optimizar entregas en esta zona"
+                    })
+            
+            # 8. INSIGHT: Proyección vs Realidad (nuevo) - Solo si hay ventas
+            if ventas_mes > 0 and proyeccion_mes_1 > 0:
+                diferencia_proyeccion = ((ventas_mes - proyeccion_mes_1) / proyeccion_mes_1) * 100
+                if abs(diferencia_proyeccion) > 20:
+                    if diferencia_proyeccion > 0:
+                        insights.append({
+                            "tipo": "positivo",
+                            "titulo": "Superando Proyecciones",
+                            "descripcion": f"Ventas {diferencia_proyeccion:.0f}% sobre proyección - Desempeño excepcional"
+                        })
+                    else:
+                        insights.append({
+                            "tipo": "negativo",
+                            "titulo": "Por Debajo de Proyecciones",
+                            "descripcion": f"Ventas {abs(diferencia_proyeccion):.0f}% bajo proyección - Revisar estrategias"
+                        })
         
-        # Recomendaciones REALES
+        # Recomendaciones REALES (mejoradas con lógica más específica)
         recomendaciones = []
         
-        if margen_neto_porcentaje < 10:
+        # 1. RECOMENDACIÓN: Optimización de costos (según severidad del margen)
+        if margen_neto_porcentaje < 5:
+            recomendaciones.append({
+                "prioridad": "alta",
+                "accion": "Optimizar costos operacionales - URGENTE",
+                "descripcion": f"Margen crítico ({margen_neto_porcentaje}%). Revisar costos de camión (${cuota_camion:,}/mes) y tapas (${costo_tapa_con_iva:.2f}/unidad). Considerar renegociar contratos."
+            })
+        elif margen_neto_porcentaje < 10:
             recomendaciones.append({
                 "prioridad": "alta",
                 "accion": "Optimizar costos operacionales",
-                "descripcion": "Revisar costos de camión y tapas"
+                "descripcion": f"Margen bajo ({margen_neto_porcentaje}%). Revisar costos de camión y tapas para mejorar rentabilidad"
+            })
+        elif margen_neto_porcentaje < 15:
+            recomendaciones.append({
+                "prioridad": "media",
+                "accion": "Evaluar optimización de costos",
+                "descripcion": f"Margen moderado ({margen_neto_porcentaje}%). Analizar oportunidades de reducción de costos sin afectar calidad"
             })
         
-        if roi_mensual < 8:
+        # 2. RECOMENDACIÓN: Eficiencia de entregas (según ROI)
+        if roi_mensual < 5:
+            recomendaciones.append({
+                "prioridad": "alta",
+                "accion": "Mejorar eficiencia de entregas - URGENTE",
+                "descripcion": f"ROI crítico ({roi_mensual}%). Optimizar rutas del camión, reducir tiempos muertos y aumentar número de entregas por ruta"
+            })
+        elif roi_mensual < 8:
             recomendaciones.append({
                 "prioridad": "media",
                 "accion": "Mejorar eficiencia de entregas",
-                "descripcion": "Optimizar rutas del camión"
+                "descripcion": f"ROI bajo ({roi_mensual}%). Optimizar rutas del camión y reducir costos operativos"
             })
         
-        if ticket_promedio < precio_venta_bidon * 2:
+        # 3. RECOMENDACIÓN: Venta cruzada (según ticket promedio)
+        ticket_minimo = precio_venta_bidon * 2  # $4000 (2 bidones)
+        if ticket_promedio > 0 and ticket_promedio < ticket_minimo * 0.75:  # Menos de $3000
+            recomendaciones.append({
+                "prioridad": "alta",
+                "accion": "Estrategias de venta cruzada - PRIORITARIO",
+                "descripcion": f"Ticket promedio bajo (${ticket_promedio:,} vs mínimo ${ticket_minimo:,}). Implementar promociones para múltiples bidones por pedido"
+            })
+        elif ticket_promedio > 0 and ticket_promedio < ticket_minimo:
             recomendaciones.append({
                 "prioridad": "media",
                 "accion": "Estrategias de venta cruzada",
-                "descripcion": "Ofrecer múltiples bidones por pedido"
+                "descripcion": f"Ticket promedio bajo (${ticket_promedio:,}). Ofrecer incentivos para pedidos de múltiples bidones"
             })
         
-        # Análisis de capacidad vs demanda
+        # 4. RECOMENDACIÓN: Expansión de capacidad (si demanda supera capacidad)
         if total_bidones_mes > punto_equilibrio * 1.5:
             recomendaciones.append({
                 "prioridad": "baja",
                 "accion": "Evaluar expansión de capacidad",
-                "descripcion": "Considerar segundo camión o más personal"
+                "descripcion": f"Ventas ({total_bidones_mes} bidones) superan equilibrio en 50% ({punto_equilibrio} bidones). Considerar segundo camión o más personal para crecimiento"
+            })
+        
+        # 5. RECOMENDACIÓN: Mejora de eficiencia operacional (si es baja)
+        if eficiencia_operacional < 5:
+            recomendaciones.append({
+                "prioridad": "alta",
+                "accion": "Revisar procesos operativos",
+                "descripcion": f"Eficiencia operacional baja ({eficiencia_operacional}%). Analizar flujo de trabajo, tiempos de entrega y asignación de recursos"
+            })
+        elif eficiencia_operacional < 10:
+            recomendaciones.append({
+                "prioridad": "media",
+                "accion": "Optimizar procesos operativos",
+                "descripcion": f"Eficiencia operacional moderada ({eficiencia_operacional}%). Identificar cuellos de botella y mejorar flujo de trabajo"
+            })
+        
+        # 6. RECOMENDACIÓN: Si no hay recomendaciones críticas, sugerir mantener estrategia
+        if len(recomendaciones) == 0 or all(r["prioridad"] != "alta" for r in recomendaciones):
+            recomendaciones.append({
+                "prioridad": "baja",
+                "accion": "Mantener estrategia actual",
+                "descripcion": "Indicadores en rango aceptable. Monitorear tendencias y mantener operación eficiente"
             })
         
         resultado = {
@@ -2790,7 +3614,7 @@ def get_analisis_rentabilidad():
                 },
                 "roi": {
                     "actual": roi_mensual,
-                    "proyectado": round(roi_mensual * 1.1, 1),
+                    "proyectado": roi_proyectado,
                     "ventas_trimestre": int(ventas_trimestre)
                 },
                 "escenarios_rentabilidad": {
@@ -2798,6 +3622,11 @@ def get_analisis_rentabilidad():
                         "ventas": ventas_optimista,
                         "utilidad": utilidad_optimista,
                         "margen": margen_optimista
+                    },
+                    "actual": {
+                        "ventas": int(ventas_mes),
+                        "utilidad": int(margen_neto),
+                        "margen": margen_neto_porcentaje
                     },
                     "pesimista": {
                         "ventas": ventas_pesimista,
@@ -2840,9 +3669,9 @@ def get_ventas_locales():
         # Filtrar solo ventas del local (retirolocal = 'si')
         if 'retirolocal' in df.columns:
             df_local = df[df['retirolocal'] == 'si']
-            print(f"Ventas del local: {len(df_local)} registros")
+            logger.info(f"Ventas del local: {len(df_local)} registros")
         else:
-            print("No se encontró columna 'retirolocal'")
+            logger.warning("No se encontró columna 'retirolocal'")
             return {
                 "ventas_totales": 0,
                 "ventas_mes": 0,
@@ -3004,7 +3833,49 @@ def get_ventas_locales():
 
 @app.get("/test")
 def test_endpoint():
-    return {"message": "Server is working", "ventas_hoy": 22000}
+    return {
+        "message": "Server is working", 
+        "ventas_hoy": 22000,
+        "fecha_servidor": datetime.now().isoformat(),
+        "mes_actual": datetime.now().month,
+        "anio_actual": datetime.now().year
+    }
+
+@app.get("/health")
+def health_check():
+    """Endpoint de health check rápido para keep-alive"""
+    # Health check optimizado para Render - respuesta inmediata sin llamadas externas
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "version": "2.0"
+    }
+
+@app.get("/health/detailed")
+def health_check_detailed():
+    """Endpoint de health check detallado con verificación de servicios externos"""
+    try:
+        # Verificar conexión a APIs externas
+        test_clientes = requests.get(ENDPOINT_CLIENTES, headers=HEADERS, timeout=5)
+        test_pedidos = requests.get(ENDPOINT_PEDIDOS, headers=HEADERS, timeout=5)
+        
+        return {
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "services": {
+                "api_clientes": "ok" if test_clientes.status_code == 200 else "degraded",
+                "api_pedidos": "ok" if test_pedidos.status_code == 200 else "degraded"
+            },
+            "version": "2.0"
+        }
+    except Exception as e:
+        logger.warning(f"Health check detallado con problemas: {e}")
+        return {
+            "status": "degraded",
+            "timestamp": datetime.now().isoformat(),
+            "error": str(e),
+            "version": "2.0"
+        }
 
 @app.get("/ventas-locales-test", response_model=Dict)
 def get_ventas_locales_test():
