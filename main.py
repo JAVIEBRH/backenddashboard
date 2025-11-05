@@ -201,10 +201,44 @@ def verificar_recalibracion_necesaria() -> bool:
     return (fecha_actual - ultima_recalibracion).total_seconds() > 43200  # 12 horas
 
 def parse_fecha(fecha_str):
-    """Convierte fecha del formato DD-MM-YYYY a datetime"""
+    """Convierte fecha de diferentes formatos a datetime (igual lógica que frontend)"""
     try:
-        if isinstance(fecha_str, str) and fecha_str.strip():
-            return datetime.strptime(fecha_str.strip(), "%d-%m-%Y")
+        if not fecha_str or (isinstance(fecha_str, str) and not fecha_str.strip()):
+            return None
+        
+        # Si ya es datetime, retornarlo
+        if isinstance(fecha_str, datetime):
+            return fecha_str
+        
+        fecha_str = str(fecha_str).strip()
+        
+        # Intentar formato DD-MM-YYYY (formato más común)
+        try:
+            return datetime.strptime(fecha_str, "%d-%m-%Y")
+        except:
+            pass
+        
+        # Intentar formato YYYY-MM-DD (ISO)
+        try:
+            return datetime.strptime(fecha_str, "%Y-%m-%d")
+        except:
+            pass
+        
+        # Intentar formato ISO con hora
+        try:
+            return datetime.fromisoformat(fecha_str.replace('Z', '+00:00'))
+        except:
+            pass
+        
+        # Intentar parsear con pandas (más flexible)
+        try:
+            import pandas as pd
+            parsed = pd.to_datetime(fecha_str, errors='coerce')
+            if pd.notna(parsed):
+                return parsed.to_pydatetime()
+        except:
+            pass
+        
         return None
     except Exception as e:
         logger.debug(f"Error parseando fecha '{fecha_str}': {e}")
@@ -1045,65 +1079,13 @@ def get_ventas_totales_historicas():
 
 @app.get("/ventas-historicas", response_model=List[Dict])
 def get_ventas_historicas():
-    """Obtener datos históricos de ventas para gráficos calculados desde bidones × $2,000"""
-    PRECIO_BIDON = 2000
-    
-    def obtener_bidones_pedido(pedido):
-        """Obtiene la cantidad de bidones de un pedido (igual lógica que frontend)"""
-        import re
-        
-        # Intentar obtener cantidad de diferentes campos (mismo orden que frontend)
-        if isinstance(pedido, dict):
-            # 1. Si tiene products array
-            if 'products' in pedido and isinstance(pedido['products'], list):
-                total = sum(product.get('quantity', 0) for product in pedido['products'])
-                if total > 0:
-                    return total
-            
-            # 2. Buscar campos de cantidad (mismo orden que frontend)
-            if 'cantidad' in pedido and pedido['cantidad']:
-                cantidad = int(pedido['cantidad']) if pedido['cantidad'] else 0
-                if cantidad > 0:
-                    return cantidad
-            
-            if 'cant' in pedido and pedido['cant']:
-                cantidad = int(pedido['cant']) if pedido['cant'] else 0
-                if cantidad > 0:
-                    return cantidad
-            
-            if 'qty' in pedido and pedido['qty']:
-                cantidad = int(pedido['qty']) if pedido['qty'] else 0
-                if cantidad > 0:
-                    return cantidad
-            
-            if 'quantity' in pedido and pedido['quantity']:
-                cantidad = int(pedido['quantity']) if pedido['quantity'] else 0
-                if cantidad > 0:
-                    return cantidad
-            
-            if 'bidones' in pedido and pedido['bidones']:
-                cantidad = int(pedido['bidones']) if pedido['bidones'] else 0
-                if cantidad > 0:
-                    return cantidad
-            
-            if 'unidades' in pedido and pedido['unidades']:
-                cantidad = int(pedido['unidades']) if pedido['unidades'] else 0
-                if cantidad > 0:
-                    return cantidad
-            
-            # 3. ordenpedido (último, como en frontend)
-            if 'ordenpedido' in pedido and pedido['ordenpedido']:
-                # Extraer número de ordenpedido
-                numeros = re.findall(r'\d+', str(pedido['ordenpedido']))
-                if numeros:
-                    cantidad = int(numeros[0])
-                    if cantidad > 0:
-                        return cantidad
-        
-        return 0
-    
+    """
+    Obtener datos históricos de ventas para gráficos.
+    MÉTODO CORRECTO: Sumar directamente los precios de los pedidos agrupados por mes.
+    Esto es más confiable que calcular desde bidones.
+    """
     try:
-        print("Obteniendo ventas históricas usando datos combinados (calculadas desde bidones)...")
+        print("Obteniendo ventas históricas sumando precios directamente...")
         pedidos = data_adapter.obtener_pedidos_combinados()
         print(f"Pedidos combinados obtenidos: {len(pedidos)} registros")
     except Exception as e:
@@ -1111,10 +1093,22 @@ def get_ventas_historicas():
         return []
     
     df = pd.DataFrame(pedidos)
-    if 'nombrelocal' in df.columns:
-        df = df[df['nombrelocal'] == 'Aguas Ancud']
+    if df.empty:
+        print("⚠️ No se encontraron pedidos para calcular ventas históricas")
+        return []
     
-    if df.empty or 'fecha' not in df.columns:
+    # Filtrar por "Aguas Ancud" (verificar diferentes variaciones del nombre)
+    if 'nombrelocal' in df.columns:
+        df = df[df['nombrelocal'].str.strip().str.lower() == 'aguas ancud']
+    elif 'nombre_local' in df.columns:
+        df = df[df['nombre_local'].str.strip().str.lower() == 'aguas ancud']
+    
+    if df.empty:
+        print("⚠️ No se encontraron pedidos de 'Aguas Ancud'")
+        return []
+    
+    if 'fecha' not in df.columns:
+        print("⚠️ No se encontró columna 'fecha' en los pedidos")
         return []
     
     try:
@@ -1122,49 +1116,50 @@ def get_ventas_historicas():
         df['fecha_parsed'] = df['fecha'].apply(parse_fecha)
         df = df.dropna(subset=['fecha_parsed'])
         
-        # Calcular bidones por pedido
-        df['bidones'] = df.apply(lambda row: obtener_bidones_pedido(row.to_dict()), axis=1)
+        if df.empty:
+            print("⚠️ No quedaron pedidos después de parsear fechas")
+            return []
         
-        # Validación: contar bidones totales
-        total_bidones_calculados = df['bidones'].sum()
-        print(f"📦 Total bidones calculados desde campos: {total_bidones_calculados}")
+        print(f"✅ Pedidos con fechas válidas: {len(df)}")
         
-        # Calcular ventas desde bidones (bidones × $2,000)
-        df['ventas'] = df['bidones'] * PRECIO_BIDON
+        # Convertir precios a numérico
+        df['precio'] = pd.to_numeric(df['precio'], errors='coerce').fillna(0)
         
-        # Validación: suma de ventas calculadas
-        total_ventas_calculadas = df['ventas'].sum()
-        print(f"💰 Total ventas calculadas (bidones × $2,000): ${total_ventas_calculadas:,.0f}")
+        # Filtrar pedidos con precio > 0 (válidos)
+        df = df[df['precio'] > 0]
+        
+        if df.empty:
+            print("⚠️ No quedaron pedidos con precio válido")
+            return []
         
         # Agrupar por mes y año
         df['mes_anio'] = df['fecha_parsed'].dt.to_period('M')
-        ventas_por_mes = df.groupby('mes_anio')['ventas'].sum().reset_index()
         
-        # También agrupar bidones por mes para validación
-        bidones_por_mes = df.groupby('mes_anio')['bidones'].sum().reset_index()
+        # CORRECTO: Sumar directamente los precios por mes (mismo método que /kpis)
+        ventas_por_mes = df.groupby('mes_anio')['precio'].sum().reset_index()
+        ventas_por_mes.columns = ['mes_anio', 'ventas']
+        
+        # Ordenar por fecha
+        ventas_por_mes = ventas_por_mes.sort_values('mes_anio')
         
         # Convertir a formato requerido por el gráfico
         resultado = []
-        total_ventas_resultado = 0
         for _, row in ventas_por_mes.iterrows():
             mes_anio = row['mes_anio']
-            nombre_mes = mes_anio.strftime('%b')  # Abr, May, Jun, etc.
+            nombre_mes = mes_anio.strftime('%b %Y')  # Oct 2024, Nov 2024, etc.
             ventas_mes = int(row['ventas'])
+            
             resultado.append({
                 'name': nombre_mes,
-                'ventas': ventas_mes
+                'ventas': ventas_mes,
+                'mes_anio': str(mes_anio)
             })
-            total_ventas_resultado += ventas_mes
+            
+            print(f"   {nombre_mes}: ${ventas_mes:,} (suma de precios)")
         
-        print(f"📊 Ventas históricas calculadas desde bidones: {len(resultado)} meses")
-        print(f"💰 Suma total de ventas en resultado: ${total_ventas_resultado:,.0f}")
+        print(f"📊 Total meses: {len(resultado)}")
+        print(f"💰 Total ventas: ${ventas_por_mes['ventas'].sum():,}")
         print(f"📅 Rango de fechas: {df['fecha_parsed'].min()} hasta {df['fecha_parsed'].max()}")
-        
-        # Validación: mostrar algunos meses como ejemplo
-        if len(resultado) > 0:
-            print("📋 Ejemplo de primeros 5 meses:")
-            for mes in resultado[:5]:
-                print(f"   {mes['name']}: ${mes['ventas']:,.0f}")
         
         return resultado
         
