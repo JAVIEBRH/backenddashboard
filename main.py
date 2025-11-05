@@ -676,13 +676,10 @@ def get_heatmap(mes: int = Query(None), anio: int = Query(None)):
         logger.info(f"Pedidos combinados obtenidos: {len(pedidos)} registros")
     except Exception as e:
         logger.error(f"Error al obtener pedidos para heatmap: {e}", exc_info=True)
-<<<<<<< HEAD
         return []
     
     if not pedidos or len(pedidos) == 0:
         logger.warning("No se encontraron pedidos para el heatmap")
-=======
->>>>>>> ebc215f244c8fd8aa5057c35f8edc584a4a60d29
         return []
     
     df_pedidos = pd.DataFrame(pedidos)
@@ -696,7 +693,6 @@ def get_heatmap(mes: int = Query(None), anio: int = Query(None)):
     if mes is not None and anio is not None:
         # Intentar parsear fechas en diferentes formatos
         df_pedidos['fecha_dt'] = pd.to_datetime(df_pedidos['fecha'], format='%d-%m-%Y', errors='coerce')
-<<<<<<< HEAD
         # Si falla, intentar con formato ISO
         if df_pedidos['fecha_dt'].isna().all():
             df_pedidos['fecha_dt'] = pd.to_datetime(df_pedidos['fecha'], errors='coerce')
@@ -720,12 +716,6 @@ def get_heatmap(mes: int = Query(None), anio: int = Query(None)):
         # Filtrar por fecha límite
         df_pedidos = df_pedidos[df_pedidos['fecha_dt'] >= fecha_limite]
         logger.debug(f"Pedidos tras filtro de 12 meses: {len(df_pedidos)}")
-=======
-        df_pedidos = df_pedidos[(df_pedidos['fecha_dt'].dt.month == mes) & (df_pedidos['fecha_dt'].dt.year == anio)]
-        logger.debug(f"Pedidos tras filtro mes/año ({mes}/{anio}): {len(df_pedidos)}")
-    else:
-        logger.debug("No se aplicó filtro de mes/año - mostrando todos los datos disponibles")
->>>>>>> ebc215f244c8fd8aa5057c35f8edc584a4a60d29
     
     if df_pedidos.empty:
         logger.warning("No hay pedidos después del filtro")
@@ -751,12 +741,9 @@ def get_heatmap(mes: int = Query(None), anio: int = Query(None)):
                 'precio_numerico': 'sum'
             }).reset_index()
             
-<<<<<<< HEAD
             # Renombrar para mantener consistencia
             direcciones_unicas.rename(columns={'precio_numerico': 'precio_total'}, inplace=True)
             
-=======
->>>>>>> ebc215f244c8fd8aa5057c35f8edc584a4a60d29
             logger.debug(f"Direcciones únicas encontradas: {len(direcciones_unicas)}")
             
             # Generar coordenadas basadas en hash de dirección
@@ -3061,7 +3048,6 @@ def get_analisis_rentabilidad():
         margen_bruto = ventas_mes - costos_variables
         margen_neto = utilidad  # Usar la utilidad calculada por KPIs
         
-<<<<<<< HEAD
         # Validar que haya ventas antes de calcular porcentajes
         if ventas_mes == 0:
             logger.warning("⚠️ Ventas del mes actual = $0 - Verificando datos disponibles...")
@@ -3095,20 +3081,6 @@ def get_analisis_rentabilidad():
         logger.info(f"Ventas trimestre: ${ventas_trimestre:,.0f}")
         logger.info(f"Punto de equilibrio: {punto_equilibrio} bidones (${punto_equilibrio * precio_venta_bidon:,})")
         logger.info(f"===============================")
-=======
-        # Validar que los cálculos sean razonables antes de generar insights
-        margen_bruto_porcentaje = round((margen_bruto / ventas_mes) * 100, 1) if ventas_mes > 0 else 0
-        margen_neto_porcentaje = round((margen_neto / ventas_mes) * 100, 1) if ventas_mes > 0 else 0
-        
-        # Asegurar que los valores estén en rango razonable (validación)
-        margen_neto_porcentaje = max(-100, min(100, margen_neto_porcentaje))  # Entre -100% y 100%
-        
-        # ROI mensual REAL
-        roi_mensual = round((margen_neto / (costos_totales)) * 100, 1) if costos_totales > 0 else 0
->>>>>>> ebc215f244c8fd8aa5057c35f8edc584a4a60d29
-        
-        # Asegurar que ROI esté en rango razonable
-        roi_mensual = max(-100, min(200, roi_mensual))  # Entre -100% y 200%
         
         # Análisis por cliente REAL
         clientes_unicos = pedidos_mes['usuario'].nunique() if not pedidos_mes.empty else 0
@@ -3243,7 +3215,6 @@ def get_analisis_rentabilidad():
         ventas_por_zona = pedidos_mes.groupby('zona')['precio'].sum().to_dict()
         
         # 4. PROYECCIÓN DE VENTAS PRÓXIMOS 3 MESES
-<<<<<<< HEAD
         # Calcular promedio histórico de ventas mensuales para proyecciones más precisas
         ventas_promedio_historico = 0
         if len(meses_con_datos) > 0:
@@ -3259,24 +3230,17 @@ def get_analisis_rentabilidad():
             ventas_promedio_historico = total_ventas_historico / len(meses_con_datos)
             logger.info(f"Promedio histórico de ventas: ${ventas_promedio_historico:,.0f} (basado en {len(meses_con_datos)} meses)")
         
-=======
->>>>>>> ebc215f244c8fd8aa5057c35f8edc584a4a60d29
         # Calcular tendencia mensual (asegurar que no sea 0 si hay datos)
         if ventas_mes_pasado > 0:
             tendencia_mensual = (ventas_mes - ventas_mes_pasado) / ventas_mes_pasado
         elif ventas_mes > 0:
             # Si no hay mes pasado pero sí hay mes actual, asumir crecimiento del 5%
             tendencia_mensual = 0.05
-<<<<<<< HEAD
         elif ventas_promedio_historico > 0:
             # Si no hay datos recientes pero sí histórico, usar tendencia neutral
             tendencia_mensual = 0
         else:
             # Si no hay datos en absoluto, usar tendencia neutral
-=======
-        else:
-            # Si no hay datos, usar tendencia neutral
->>>>>>> ebc215f244c8fd8aa5057c35f8edc584a4a60d29
             tendencia_mensual = 0
         
         mes_proyeccion = mes_actual + 1
@@ -3285,7 +3249,6 @@ def get_analisis_rentabilidad():
         
         factor_estacional_proyeccion = 1.2 if mes_proyeccion in [12, 1, 2] else 0.9 if mes_proyeccion in [6, 7, 8] else 1.0
         
-<<<<<<< HEAD
         # Usar ventas del mes actual si está disponible, sino usar promedio histórico
         if ventas_mes > 0:
             ventas_base_proyeccion = ventas_mes
@@ -3294,12 +3257,8 @@ def get_analisis_rentabilidad():
             logger.info(f"Usando promedio histórico (${ventas_base_proyeccion:,.0f}) para proyecciones ya que no hay ventas del mes actual")
         else:
             # Solo como último recurso, usar mes pasado o un valor mínimo
-            ventas_base_proyeccion = max(ventas_mes_pasado, 1000000)
+            ventas_base_proyeccion = max(ventas_mes_pasado, 1000000)  # $1M mínimo si no hay datos
             logger.warning(f"Usando valor por defecto (${ventas_base_proyeccion:,.0f}) para proyecciones - no hay datos históricos")
-=======
-        # Asegurar que si ventas_mes es 0, usemos un valor base mínimo para proyecciones
-        ventas_base_proyeccion = ventas_mes if ventas_mes > 0 else max(ventas_mes_pasado, 1000000)  # $1M mínimo si no hay datos
->>>>>>> ebc215f244c8fd8aa5057c35f8edc584a4a60d29
         
         proyeccion_mes_1 = int(ventas_base_proyeccion * (1 + tendencia_mensual) * factor_estacional_proyeccion)
         proyeccion_mes_2 = int(proyeccion_mes_1 * (1 + tendencia_mensual * 0.8))
@@ -3327,7 +3286,6 @@ def get_analisis_rentabilidad():
         punto_equilibrio_pesimista = int(round(cuota_camion * 1.1 / (precio_venta_bidon * 0.9 - costo_tapa_con_iva * 1.05)))
         
         # 6. ESCENARIOS DE RENTABILIDAD
-<<<<<<< HEAD
         # Usar ventas reales del mes actual o promedio histórico para escenarios
         if ventas_mes > 0:
             ventas_base_escenarios = ventas_mes
@@ -3343,20 +3301,12 @@ def get_analisis_rentabilidad():
             logger.warning(f"Usando punto de equilibrio (${ventas_base_escenarios:,.0f}) para escenarios - no hay datos históricos")
         
         # Escenario optimista: +20% ventas, -10% costos
-=======
-        # Asegurar que los escenarios se calculen correctamente incluso si ventas_mes es 0
-        ventas_base_escenarios = ventas_mes if ventas_mes > 0 else max(ventas_mes_pasado, punto_equilibrio * precio_venta_bidon)
-        
->>>>>>> ebc215f244c8fd8aa5057c35f8edc584a4a60d29
         ventas_optimista = int(ventas_base_escenarios * 1.2)
         costos_optimista = int(costos_totales * 0.9)
         utilidad_optimista = ventas_optimista - costos_optimista
         margen_optimista = round((utilidad_optimista / ventas_optimista) * 100, 1) if ventas_optimista > 0 else 0
         
-<<<<<<< HEAD
         # Escenario pesimista: -20% ventas, +10% costos
-=======
->>>>>>> ebc215f244c8fd8aa5057c35f8edc584a4a60d29
         ventas_pesimista = int(ventas_base_escenarios * 0.8)
         costos_pesimista = int(costos_totales * 1.1)
         utilidad_pesimista = ventas_pesimista - costos_pesimista
@@ -3366,62 +3316,6 @@ def get_analisis_rentabilidad():
         
 
         
-<<<<<<< HEAD
-        # Calcular tendencias históricas para insights inteligentes
-        # Obtener datos de meses anteriores para comparación
-        meses_comparacion = []
-        for i in range(1, 4):  # Últimos 3 meses adicionales
-            if mes_actual > i:
-                mes_comp = mes_actual - i
-                anio_comp = anio_actual
-            else:
-                mes_comp = 12 + (mes_actual - i)
-                anio_comp = anio_actual - 1
-            
-            pedidos_comp = df[(df['fecha_parsed'].dt.month == mes_comp) & (df['fecha_parsed'].dt.year == anio_comp)]
-            ventas_comp = pedidos_comp['precio'].sum()
-            meses_comparacion.append({
-                'mes': mes_comp,
-                'anio': anio_comp,
-                'ventas': ventas_comp,
-                'pedidos': len(pedidos_comp)
-            })
-        
-        # Calcular tendencia de margen (comparar con mes anterior)
-        if len(meses_comparacion) > 0:
-            ventas_mes_anterior_comp = meses_comparacion[0]['ventas']
-            if ventas_mes_anterior_comp > 0:
-                # Calcular margen aproximado del mes anterior
-                bidones_mes_anterior_comp = len(meses_comparacion[0]['pedidos'])  # Aproximación
-                costos_mes_anterior_comp = cuota_camion + (costo_tapa_con_iva * bidones_mes_anterior_comp)
-                utilidad_mes_anterior_comp = ventas_mes_anterior_comp - costos_mes_anterior_comp
-                margen_mes_anterior_comp = (utilidad_mes_anterior_comp / ventas_mes_anterior_comp) * 100 if ventas_mes_anterior_comp > 0 else 0
-                tendencia_margen = margen_neto_porcentaje - margen_mes_anterior_comp
-            else:
-                tendencia_margen = 0
-        else:
-            tendencia_margen = 0
-        
-        # Validar que haya datos suficientes antes de generar insights
-        if ventas_mes == 0:
-            logger.warning("No hay ventas del mes - Generando insight informativo")
-            insights = [{
-                "tipo": "negativo",
-                "titulo": "Sin Datos del Mes Actual",
-                "descripcion": f"No se encontraron pedidos para el mes {mes_actual}/{anio_actual}. El sistema está usando el mes más reciente con datos disponible. Verifique los datos en la base de datos."
-            }]
-        else:
-            # Generar insights inteligentes con detección de tendencias
-            insights = []
-        
-        # 1. INSIGHT: Margen Neto (con detección de tendencia) - Solo si hay ventas
-        if ventas_mes > 0 and margen_neto_porcentaje > 15:
-            if tendencia_margen > 2:
-                insights.append({
-                    "tipo": "positivo",
-                    "titulo": "Rentabilidad Sólida en Mejora",
-                    "descripcion": f"Margen neto del {margen_neto_porcentaje}% (+{tendencia_margen:.1f}% vs mes anterior) - Excelente gestión financiera"
-=======
         # Generar insights REALES (con cobertura completa)
         insights = []
         
@@ -3451,116 +3345,32 @@ def get_analisis_rentabilidad():
                 "descripcion": f"Margen neto del {margen_neto_porcentaje}% - Requiere atención inmediata"
             })
         
-        # 2. INSIGHT: ROI Mensual (con todos los rangos)
-        if roi_mensual > 10:
-            insights.append({
-                "tipo": "positivo",
-                "titulo": "ROI Competitivo",
-                "descripcion": f"Retorno del {roi_mensual}% - Buen rendimiento sobre inversión"
-            })
-        elif roi_mensual >= 8:
-            insights.append({
-                "tipo": "positivo",
-                "titulo": "ROI Moderado",
-                "descripcion": f"Retorno del {roi_mensual}% - Rendimiento aceptable, posibilidad de optimización"
-            })
-        elif roi_mensual >= 5:
-            insights.append({
-                "tipo": "negativo",
-                "titulo": "ROI Bajo",
-                "descripcion": f"Retorno del {roi_mensual}% - Requiere mejoras operativas"
-            })
-        else:
-            insights.append({
-                "tipo": "negativo",
-                "titulo": "ROI Crítico",
-                "descripcion": f"Retorno del {roi_mensual}% - Necesita optimización urgente"
-            })
-        
-        # 3. INSIGHT: Punto de Equilibrio (con análisis de cercanía)
-        diferencia_equilibrio = ventas_mes - (punto_equilibrio * precio_venta_bidon)
-        porcentaje_equilibrio = (ventas_mes / (punto_equilibrio * precio_venta_bidon)) * 100 if punto_equilibrio > 0 else 0
-        
-        if diferencia_equilibrio > 0:
-            if porcentaje_equilibrio > 150:
+        # 2. INSIGHT: ROI Mensual (con todos los rangos) - Solo si hay ventas
+        if ventas_mes > 0:
+            if roi_mensual > 10:
                 insights.append({
                     "tipo": "positivo",
-                    "titulo": "Muy Sobre Punto de Equilibrio",
-                    "descripcion": f"${diferencia_equilibrio:,} sobre equilibrio ({porcentaje_equilibrio:.0f}%) - Operación muy rentable"
->>>>>>> ebc215f244c8fd8aa5057c35f8edc584a4a60d29
+                    "titulo": "ROI Competitivo",
+                    "descripcion": f"Retorno del {roi_mensual}% - Buen rendimiento sobre inversión"
                 })
-            else:
+            elif roi_mensual >= 8:
                 insights.append({
                     "tipo": "positivo",
-<<<<<<< HEAD
-                    "titulo": "Rentabilidad Sólida",
-                    "descripcion": f"Margen neto del {margen_neto_porcentaje}% - Excelente gestión financiera"
+                    "titulo": "ROI Moderado",
+                    "descripcion": f"Retorno del {roi_mensual}% - Rendimiento aceptable, posibilidad de optimización"
                 })
-        elif margen_neto_porcentaje >= 10:
-            if tendencia_margen > 1:
-                insights.append({
-                    "tipo": "positivo",
-                    "titulo": "Rentabilidad en Mejora",
-                    "descripcion": f"Margen neto del {margen_neto_porcentaje}% (+{tendencia_margen:.1f}% vs mes anterior) - Tendencia positiva"
-                })
-            elif tendencia_margen < -1:
+            elif roi_mensual >= 5:
                 insights.append({
                     "tipo": "negativo",
-                    "titulo": "Rentabilidad en Deterioro",
-                    "descripcion": f"Margen neto del {margen_neto_porcentaje}% ({tendencia_margen:.1f}% vs mes anterior) - Requiere atención"
+                    "titulo": "ROI Bajo",
+                    "descripcion": f"Retorno del {roi_mensual}% - Requiere mejoras operativas"
                 })
-            else:
-                insights.append({
-                    "tipo": "positivo",
-                    "titulo": "Rentabilidad Moderada",
-                    "descripcion": f"Margen neto del {margen_neto_porcentaje}% - Rentabilidad aceptable, con potencial de mejora"
-                })
-        elif margen_neto_porcentaje >= 5:
-            if tendencia_margen < -2:
+            elif roi_mensual < 5:
                 insights.append({
                     "tipo": "negativo",
-                    "titulo": "Rentabilidad Baja en Deterioro",
-                    "descripcion": f"Margen neto del {margen_neto_porcentaje}% ({tendencia_margen:.1f}% vs mes anterior) - Acción requerida"
+                    "titulo": "ROI Crítico",
+                    "descripcion": f"Retorno del {roi_mensual}% - Necesita optimización urgente"
                 })
-            else:
-                insights.append({
-                    "tipo": "negativo",
-                    "titulo": "Rentabilidad Baja",
-                    "descripcion": f"Margen neto del {margen_neto_porcentaje}% - Margen reducido, requiere optimización"
-                })
-        else:
-            insights.append({
-                "tipo": "negativo",
-                "titulo": "Rentabilidad Crítica",
-                "descripcion": f"Margen neto del {margen_neto_porcentaje}% - Requiere atención inmediata"
-            })
-        
-            # 2. INSIGHT: ROI Mensual (con todos los rangos) - Solo si hay ventas
-            if ventas_mes > 0:
-                if roi_mensual > 10:
-                    insights.append({
-                        "tipo": "positivo",
-                        "titulo": "ROI Competitivo",
-                        "descripcion": f"Retorno del {roi_mensual}% - Buen rendimiento sobre inversión"
-                    })
-                elif roi_mensual >= 8:
-                    insights.append({
-                        "tipo": "positivo",
-                        "titulo": "ROI Moderado",
-                        "descripcion": f"Retorno del {roi_mensual}% - Rendimiento aceptable, posibilidad de optimización"
-                    })
-                elif roi_mensual >= 5:
-                    insights.append({
-                        "tipo": "negativo",
-                        "titulo": "ROI Bajo",
-                        "descripcion": f"Retorno del {roi_mensual}% - Requiere mejoras operativas"
-                    })
-                elif roi_mensual < 5:
-                    insights.append({
-                        "tipo": "negativo",
-                        "titulo": "ROI Crítico",
-                        "descripcion": f"Retorno del {roi_mensual}% - Necesita optimización urgente"
-                    })
             
             # 3. INSIGHT: Crecimiento Mensual vs Trimestral (nuevo) - Solo si hay ventas
             if ventas_mes > 0 and ventas_mes_pasado > 0:
@@ -3672,43 +3482,6 @@ def get_analisis_rentabilidad():
                             "titulo": "Por Debajo de Proyecciones",
                             "descripcion": f"Ventas {abs(diferencia_proyeccion):.0f}% bajo proyección - Revisar estrategias"
                         })
-=======
-                    "titulo": "Sobre Punto de Equilibrio",
-                    "descripcion": f"${diferencia_equilibrio:,} sobre equilibrio - Operación rentable"
-                })
-        elif porcentaje_equilibrio >= 90:
-            insights.append({
-                "tipo": "negativo",
-                "titulo": "Cerca del Punto de Equilibrio",
-                "descripcion": f"Faltan ${abs(diferencia_equilibrio):,} para equilibrio ({porcentaje_equilibrio:.0f}%) - Riesgo de pérdidas"
-            })
-        else:
-            insights.append({
-                "tipo": "negativo",
-                "titulo": "Bajo Punto de Equilibrio",
-                "descripcion": f"Faltan ${abs(diferencia_equilibrio):,} para equilibrio ({porcentaje_equilibrio:.0f}%) - Operación no rentable"
-            })
-        
-        # 4. INSIGHT: Eficiencia Operacional (con todos los rangos)
-        if eficiencia_operacional > 10:
-            insights.append({
-                "tipo": "positivo",
-                "titulo": "Eficiencia Operacional Alta",
-                "descripcion": f"Eficiencia del {eficiencia_operacional}% - Operación optimizada"
-            })
-        elif eficiencia_operacional >= 5:
-            insights.append({
-                "tipo": "negativo",
-                "titulo": "Eficiencia Operacional Moderada",
-                "descripcion": f"Eficiencia del {eficiencia_operacional}% - Hay margen para mejorar procesos"
-            })
-        else:
-            insights.append({
-                "tipo": "negativo",
-                "titulo": "Eficiencia Operacional Baja",
-                "descripcion": f"Eficiencia del {eficiencia_operacional}% - Requiere revisión de procesos operativos"
-            })
->>>>>>> ebc215f244c8fd8aa5057c35f8edc584a4a60d29
         
         # Recomendaciones REALES (mejoradas con lógica más específica)
         recomendaciones = []
