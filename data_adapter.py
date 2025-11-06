@@ -149,16 +149,40 @@ class DataAdapter:
             return []
     
     def fetch_pedidos_nuevos(self) -> List[Dict]:
-        """Obtiene pedidos del endpoint nuevo (MongoDB)"""
+        """Obtiene pedidos del endpoint nuevo (MongoDB) - TODOS los datos históricos"""
         try:
-            logger.info("Obteniendo pedidos del endpoint nuevo...")
-            url = f"{ENDPOINT_PEDIDOS_NUEVO}?storeId={STORE_ID}&limit=1000"
-            response = requests.get(url, timeout=10)
-            response.raise_for_status()
-            data = response.json()
-            pedidos = data.get('data', {}).get('docs', []) if data.get('success') else []
-            logger.info(f"Pedidos nuevos obtenidos: {len(pedidos)} registros")
-            return pedidos
+            logger.info("Obteniendo pedidos del endpoint nuevo (TODOS los datos históricos)...")
+            all_pedidos = []
+            page = 1
+            limit = 1000  # Máximo por página
+            
+            while True:
+                url = f"{ENDPOINT_PEDIDOS_NUEVO}?storeId={STORE_ID}&limit={limit}&page={page}"
+                logger.info(f"Obteniendo página {page} del endpoint nuevo...")
+                response = requests.get(url, timeout=30)
+                response.raise_for_status()
+                data = response.json()
+                
+                if not data.get('success'):
+                    break
+                
+                pedidos_page = data.get('data', {}).get('docs', [])
+                if not pedidos_page or len(pedidos_page) == 0:
+                    break
+                
+                all_pedidos.extend(pedidos_page)
+                logger.info(f"Página {page}: {len(pedidos_page)} pedidos obtenidos (total acumulado: {len(all_pedidos)})")
+                
+                # Verificar si hay más páginas
+                pagination = data.get('data', {}).get('pagination', {})
+                total_pages = pagination.get('totalPages', 1)
+                if page >= total_pages:
+                    break
+                
+                page += 1
+            
+            logger.info(f"Pedidos nuevos obtenidos (TODOS): {len(all_pedidos)} registros")
+            return all_pedidos
         except Exception as e:
             logger.error(f"Error obteniendo pedidos nuevos: {e}")
             return []

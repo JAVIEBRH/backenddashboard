@@ -2361,8 +2361,22 @@ def get_pedidos_por_horario():
         total_pedidos_historico = len(df)
         total_en_rangos_historico = bloque_manana_historico + bloque_tarde_historico
         
+        # Calcular rango de fechas de la muestra histórica
+        if 'fecha_parsed' in df.columns:
+            fecha_min = df['fecha_parsed'].min()
+            fecha_max = df['fecha_parsed'].max()
+            dias_historicos = (fecha_max - fecha_min).days if fecha_min and fecha_max else 0
+            meses_historicos = dias_historicos / 30.0 if dias_historicos > 0 else 0
+        else:
+            fecha_min = None
+            fecha_max = None
+            dias_historicos = 0
+            meses_historicos = 0
+        
         logger.info(f"=== MUESTRA HISTÓRICA (TODOS los pedidos históricos con hora) ===")
         logger.info(f"Total pedidos históricos: {total_pedidos_historico}")
+        logger.info(f"Rango de fechas históricas: {fecha_min} a {fecha_max}")
+        logger.info(f"Período histórico: {dias_historicos} días ({meses_historicos:.1f} meses)")
         logger.info(f"Pedidos procesados con hora: {pedidos_procesados_historico}")
         logger.info(f"Pedidos en rango mañana (10-14h): {bloque_manana_historico}")
         logger.info(f"Pedidos en rango tarde (14-20h): {bloque_tarde_historico}")
