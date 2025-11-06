@@ -2252,7 +2252,7 @@ def get_pedidos_por_horario():
             if len(df_mes_actual) > 0:
                 logger.info(f"Rango de fechas de pedidos del mes actual: {df_mes_actual['fecha_parsed'].min()} a {df_mes_actual['fecha_parsed'].max()}")
             
-            # Usar muestra histórica para calcular porcentajes
+            # Usar TODOS los pedidos históricos para calcular porcentajes
             df = df_historico.copy()
         else:
             logger.warning("⚠️ No se encontró columna 'fecha' en los pedidos, usando todos los pedidos")
