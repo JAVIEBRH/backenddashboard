@@ -3319,7 +3319,6 @@ def get_analisis_rentabilidad():
         logger.info(f"Utilidad: ${utilidad:,.0f}")
         logger.info(f"Margen neto: ${margen_neto:,.0f} ({margen_neto_porcentaje}%)")
         logger.info(f"ROI mensual (actual): {roi_mensual}%")
-        logger.info(f"Ventas trimestre: ${ventas_trimestre:,.0f}")
         logger.info(f"Punto de equilibrio: {punto_equilibrio} bidones (${punto_equilibrio * precio_venta_bidon:,})")
         logger.info(f"===============================")
         
@@ -3421,6 +3420,7 @@ def get_analisis_rentabilidad():
         logger.info(f"Crecimiento calculado - Mensual: {crecimiento_mensual}%, Trimestral: {crecimiento_trimestral}%")
         logger.info(f"Ventas trimestre actual: ${ventas_trimestre:,} (usando {len(meses_trimestre_actual)} meses)")
         logger.info(f"Ventas trimestre anterior: ${ventas_trimestre_anterior:,}")
+        logger.info(f"Ventas trimestre (resumen): ${ventas_trimestre:,.0f}")
         
         # 2. ESTACIONALIDAD (VERANO VS INVIERNO)
         # Verano: Diciembre, Enero, Febrero (meses 12, 1, 2)
