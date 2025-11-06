@@ -2192,29 +2192,66 @@ def get_ventas_semanales():
 
 @app.get("/pedidos-por-horario", response_model=Dict)
 def get_pedidos_por_horario():
-    """Calcular pedidos por horario reales"""
+    """Calcular pedidos por horario del mes actual"""
     try:
-        response = requests.get(ENDPOINT_PEDIDOS, headers=HEADERS, timeout=10)
-        response.raise_for_status()
-        pedidos = response.json()
-    except Exception as e:
-        print("Error al obtener pedidos para horarios:", e)
-        return {
-            "pedidos_manana": 0,
-            "pedidos_tarde": 0,
-            "total": 0,
-            "porcentaje_manana": 0,
-            "porcentaje_tarde": 0
-        }
-    
-    try:
+        # Obtener pedidos usando data_adapter (igual que otros endpoints)
+        logger.info("Obteniendo pedidos combinados para horarios usando capa de adaptación...")
+        pedidos = data_adapter.obtener_pedidos_combinados()
+        logger.info(f"Pedidos combinados obtenidos: {len(pedidos)} registros")
+        
+        if not pedidos or len(pedidos) == 0:
+            logger.warning("No se encontraron pedidos para horarios")
+            return {
+                "pedidos_manana": 0,
+                "pedidos_tarde": 0,
+                "total": 0,
+                "porcentaje_manana": 0,
+                "porcentaje_tarde": 0
+            }
+        
         df = pd.DataFrame(pedidos)
         
         # Filtrar Aguas Ancud
         if 'nombrelocal' in df.columns:
-            df = df[df['nombrelocal'] == 'Aguas Ancud']
+            df = df[df['nombrelocal'].str.strip().str.lower() == 'aguas ancud']
         
         if df.empty:
+            logger.warning("No hay pedidos de Aguas Ancud")
+            return {
+                "pedidos_manana": 0,
+                "pedidos_tarde": 0,
+                "total": 0,
+                "porcentaje_manana": 0,
+                "porcentaje_tarde": 0
+            }
+        
+        # Filtrar solo pedidos del mes actual (igual que endpoint KPIs)
+        if 'fecha' in df.columns:
+            logger.info(f"Total de pedidos ANTES del filtro de fecha: {len(df)}")
+            df['fecha_parsed'] = df['fecha'].apply(parse_fecha)
+            df = df.dropna(subset=['fecha_parsed'])
+            logger.info(f"Pedidos con fechas válidas después de parsear: {len(df)}")
+            
+            # Calcular fechas para filtros - usar fecha real de hoy
+            hoy = datetime.now()
+            mes_actual = hoy.month
+            anio_actual = hoy.year
+            logger.info(f"Filtrando pedidos del mes actual: {mes_actual}/{anio_actual}")
+            logger.info(f"Fecha de hoy: {hoy.strftime('%Y-%m-%d %H:%M:%S')}")
+            
+            # Filtrar solo pedidos del mes actual
+            df_antes_filtro = len(df)
+            df = df[(df['fecha_parsed'].dt.month == mes_actual) & (df['fecha_parsed'].dt.year == anio_actual)]
+            logger.info(f"Pedidos ANTES del filtro de mes: {df_antes_filtro}")
+            logger.info(f"Pedidos DESPUÉS del filtro de mes actual ({mes_actual}/{anio_actual}): {len(df)}")
+            
+            if len(df) > 0:
+                logger.info(f"Rango de fechas de pedidos filtrados: {df['fecha_parsed'].min()} a {df['fecha_parsed'].max()}")
+        else:
+            logger.warning("⚠️ No se encontró columna 'fecha' en los pedidos, usando todos los pedidos")
+        
+        if df.empty:
+            logger.warning("No hay pedidos del mes actual")
             return {
                 "pedidos_manana": 0,
                 "pedidos_tarde": 0,
@@ -2267,16 +2304,18 @@ def get_pedidos_por_horario():
             "porcentaje_tarde": porcentaje_tarde
         }
         
-        print("=== PEDIDOS POR HORARIO ===")
-        print(f"Mañana (11-13h): {bloque_manana} ({porcentaje_manana}%)")
-        print(f"Tarde (15-19h): {bloque_tarde} ({porcentaje_tarde}%)")
-        print(f"Total: {total}")
-        print("==========================")
+        logger.info("=== PEDIDOS POR HORARIO (MES ACTUAL) ===")
+        logger.info(f"Mañana (11-13h): {bloque_manana} ({porcentaje_manana}%)")
+        logger.info(f"Tarde (15-19h): {bloque_tarde} ({porcentaje_tarde}%)")
+        logger.info(f"Total: {total}")
+        logger.info("==========================")
         
         return resultado
         
     except Exception as e:
-        print(f"Error en cálculo de pedidos por horario: {e}")
+        logger.error(f"Error en cálculo de pedidos por horario: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
         return {
             "pedidos_manana": 0,
             "pedidos_tarde": 0,
