@@ -2192,7 +2192,7 @@ def get_ventas_semanales():
 
 @app.get("/pedidos-por-horario", response_model=Dict)
 def get_pedidos_por_horario():
-    """Calcular pedidos por horario del mes actual usando muestra histórica para porcentajes"""
+    """Calcular pedidos por horario del mes actual usando TODOS los pedidos históricos con hora para porcentajes"""
     try:
         # Obtener pedidos usando data_adapter (igual que otros endpoints)
         logger.info("Obteniendo pedidos combinados para horarios usando capa de adaptación...")
@@ -2237,16 +2237,13 @@ def get_pedidos_por_horario():
             mes_actual = hoy.month
             anio_actual = hoy.year
             
-            # Calcular fecha límite para muestra histórica (últimos 6 meses)
-            fecha_limite_historica = hoy - timedelta(days=180)  # 6 meses aproximadamente
-            
             logger.info(f"Fecha de hoy: {hoy.strftime('%Y-%m-%d %H:%M:%S')}")
             logger.info(f"Filtrando pedidos del mes actual: {mes_actual}/{anio_actual}")
-            logger.info(f"Usando muestra histórica desde: {fecha_limite_historica.strftime('%Y-%m-%d')} (últimos 6 meses)")
+            logger.info(f"Usando TODOS los pedidos históricos con hora para calcular porcentajes")
             
-            # Crear DataFrame para muestra histórica (últimos 6 meses)
-            df_historico = df[df['fecha_parsed'] >= fecha_limite_historica]
-            logger.info(f"Pedidos en muestra histórica (últimos 6 meses): {len(df_historico)}")
+            # Usar TODOS los pedidos históricos (no solo últimos 6 meses)
+            df_historico = df.copy()
+            logger.info(f"Pedidos históricos totales (todos los pedidos con fecha): {len(df_historico)}")
             
             # Filtrar solo pedidos del mes actual para mostrar
             df_mes_actual = df[(df['fecha_parsed'].dt.month == mes_actual) & (df['fecha_parsed'].dt.year == anio_actual)]
@@ -2364,7 +2361,7 @@ def get_pedidos_por_horario():
         total_pedidos_historico = len(df)
         total_en_rangos_historico = bloque_manana_historico + bloque_tarde_historico
         
-        logger.info(f"=== MUESTRA HISTÓRICA (últimos 6 meses) ===")
+        logger.info(f"=== MUESTRA HISTÓRICA (TODOS los pedidos históricos con hora) ===")
         logger.info(f"Total pedidos históricos: {total_pedidos_historico}")
         logger.info(f"Pedidos procesados con hora: {pedidos_procesados_historico}")
         logger.info(f"Pedidos en rango mañana (10-14h): {bloque_manana_historico}")
