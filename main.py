@@ -2280,18 +2280,46 @@ def get_pedidos_por_horario():
             logger.info(f"Columnas relacionadas con hora encontradas: {columnas_hora}")
         
         # Calcular bloques
+        import re
         bloque_manana = 0
         bloque_tarde = 0
         pedidos_procesados = 0
         pedidos_fuera_rango = 0
         
         for _, pedido in df.iterrows():
+            hora_valida = None
+            
+            # Intentar obtener hora desde campo 'hora' (formato 24h: "14:30:00" o "14:30")
             if pd.notna(pedido.get('hora')):
-                hora_str = str(pedido['hora'])
-                pedidos_procesados += 1
+                hora_str = str(pedido['hora']).strip()
+                
+                # Intentar parsear formato 24 horas: "14:30:00" o "14:30"
+                hora_match_24h = re.match(r'(\d{1,2}):(\d{2})(?::\d{2})?', hora_str)
+                
+                if hora_match_24h:
+                    hora = int(hora_match_24h.group(1))
+                    hora_valida = hora
+                else:
+                    # Intentar formato 12 horas: "02:53 pm" o "11:30 am"
+                    hora_match_12h = re.match(r'(\d{1,2}):(\d{2})\s*(am|pm)', hora_str.lower())
+                    
+                    if hora_match_12h:
+                        hora = int(hora_match_12h.group(1))
+                        ampm = hora_match_12h.group(3)
+                        
+                        # Convertir a formato 24 horas
+                        if ampm == 'pm' and hora != 12:
+                            hora += 12
+                        elif ampm == 'am' and hora == 12:
+                            hora = 0
+                        
+                        hora_valida = hora
+            
+            # Si no hay hora en 'hora', intentar 'horaagenda' (formato 12h)
+            if hora_valida is None and pd.notna(pedido.get('horaagenda')):
+                hora_str = str(pedido['horaagenda']).strip()
                 
                 # Formato: "02:53 pm" o "11:30 am"
-                import re
                 hora_match = re.match(r'(\d{1,2}):(\d{2})\s*(am|pm)', hora_str.lower())
                 
                 if hora_match:
@@ -2304,14 +2332,17 @@ def get_pedidos_por_horario():
                     elif ampm == 'am' and hora == 12:
                         hora = 0
                     
-                    if hora >= 11 and hora < 13:
-                        bloque_manana += 1
-                    elif hora >= 15 and hora < 19:
-                        bloque_tarde += 1
-                    else:
-                        pedidos_fuera_rango += 1
+                    hora_valida = hora
+            
+            # Clasificar según la hora válida
+            if hora_valida is not None:
+                pedidos_procesados += 1
+                if hora_valida >= 11 and hora_valida < 13:
+                    bloque_manana += 1
+                elif hora_valida >= 15 and hora_valida < 19:
+                    bloque_tarde += 1
                 else:
-                    logger.debug(f"Hora no coincide con patrón esperado: {hora_str}")
+                    pedidos_fuera_rango += 1
         
         logger.info(f"Pedidos procesados con hora: {pedidos_procesados}")
         logger.info(f"Pedidos en rango mañana (11-13h): {bloque_manana}")
