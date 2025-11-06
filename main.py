@@ -2260,13 +2260,35 @@ def get_pedidos_por_horario():
                 "porcentaje_tarde": 0
             }
         
+        # Verificar si hay campo 'hora' en los pedidos
+        pedidos_con_hora = 0
+        pedidos_sin_hora = 0
+        if 'hora' in df.columns:
+            pedidos_con_hora = df['hora'].notna().sum()
+            pedidos_sin_hora = df['hora'].isna().sum()
+            logger.info(f"Pedidos con campo 'hora': {pedidos_con_hora}")
+            logger.info(f"Pedidos sin campo 'hora': {pedidos_sin_hora}")
+            
+            # Mostrar algunos ejemplos de horas
+            if pedidos_con_hora > 0:
+                horas_ejemplo = df[df['hora'].notna()]['hora'].head(5).tolist()
+                logger.info(f"Ejemplos de horas encontradas: {horas_ejemplo}")
+        else:
+            logger.warning("⚠️ No se encontró columna 'hora' en los pedidos")
+            # Buscar columnas similares
+            columnas_hora = [col for col in df.columns if 'hora' in col.lower() or 'time' in col.lower()]
+            logger.info(f"Columnas relacionadas con hora encontradas: {columnas_hora}")
+        
         # Calcular bloques
         bloque_manana = 0
         bloque_tarde = 0
+        pedidos_procesados = 0
+        pedidos_fuera_rango = 0
         
         for _, pedido in df.iterrows():
             if pd.notna(pedido.get('hora')):
                 hora_str = str(pedido['hora'])
+                pedidos_procesados += 1
                 
                 # Formato: "02:53 pm" o "11:30 am"
                 import re
@@ -2286,6 +2308,15 @@ def get_pedidos_por_horario():
                         bloque_manana += 1
                     elif hora >= 15 and hora < 19:
                         bloque_tarde += 1
+                    else:
+                        pedidos_fuera_rango += 1
+                else:
+                    logger.debug(f"Hora no coincide con patrón esperado: {hora_str}")
+        
+        logger.info(f"Pedidos procesados con hora: {pedidos_procesados}")
+        logger.info(f"Pedidos en rango mañana (11-13h): {bloque_manana}")
+        logger.info(f"Pedidos en rango tarde (15-19h): {bloque_tarde}")
+        logger.info(f"Pedidos fuera de rangos: {pedidos_fuera_rango}")
         
         total = bloque_manana + bloque_tarde
         
