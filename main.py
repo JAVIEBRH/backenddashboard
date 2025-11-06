@@ -2260,6 +2260,7 @@ def get_pedidos_por_horario():
         else:
             logger.warning("⚠️ No se encontró columna 'fecha' en los pedidos, usando todos los pedidos")
             df_mes_actual = df.copy()
+            df_historico = df.copy()
         
         if df.empty:
             logger.warning("No hay pedidos del mes actual")
@@ -2385,7 +2386,11 @@ def get_pedidos_por_horario():
         bloque_tarde_mes = 0
         pedidos_procesados_mes = 0
         
-        if 'fecha' in df_mes_actual.columns and len(df_mes_actual) > 0:
+        # Asegurar que df_mes_actual esté definido
+        if 'fecha' not in df.columns:
+            df_mes_actual = df.copy()
+        
+        if len(df_mes_actual) > 0:
             for _, pedido in df_mes_actual.iterrows():
                 hora_valida = None
                 
