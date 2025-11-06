@@ -6,6 +6,7 @@ import requests
 import pandas as pd
 from typing import List, Dict, Optional, Tuple
 from datetime import datetime, timedelta
+from calendar import monthrange
 import json
 import numpy as np
 import warnings
@@ -3217,6 +3218,26 @@ def get_analisis_rentabilidad():
         ventas_mes = pedidos_mes['precio'].sum() if not pedidos_mes.empty else 0
         ventas_mes_pasado = pedidos_mes_pasado['precio'].sum() if not pedidos_mes_pasado.empty else 0
         
+        # Proyección de ventas mensuales cuando el mes no ha finalizado
+        dias_mes_actual = monthrange(anio_actual, mes_actual)[1]
+        inicio_mes_actual = datetime(anio_actual, mes_actual, 1)
+        factor_proyeccion_mensual = 1.0
+        dias_transcurridos_actual = dias_mes_actual
+        ventas_mes_proyectadas = ventas_mes
+        
+        if not pedidos_mes.empty:
+            ultimo_dia_disponible_actual = pedidos_mes['fecha_parsed'].max()
+            dias_transcurridos_actual = max(1, (ultimo_dia_disponible_actual - inicio_mes_actual).days + 1)
+            if dias_transcurridos_actual < dias_mes_actual and ventas_mes > 0:
+                factor_proyeccion_mensual = dias_mes_actual / dias_transcurridos_actual
+                ventas_mes_proyectadas = int(round(ventas_mes * factor_proyeccion_mensual))
+                logger.info(f"Mes actual incompleto: {dias_transcurridos_actual}/{dias_mes_actual} días con datos. Factor proyección: {factor_proyeccion_mensual:.2f}")
+                logger.info(f"Ventas proyectadas mes actual: ${ventas_mes_proyectadas:,.0f} (vs ventas reales ${ventas_mes:,.0f})")
+            else:
+                dias_transcurridos_actual = dias_mes_actual
+        else:
+            logger.warning("No hay pedidos en el mes actual para proyectar ventas.")
+        
         logger.info(f"Ventas mes actual: ${ventas_mes:,.0f}")
         logger.info(f"Ventas mes pasado: ${ventas_mes_pasado:,.0f}")
         
@@ -3323,8 +3344,9 @@ def get_analisis_rentabilidad():
         # 1. CRECIMIENTO MENSUAL VS TRIMESTRAL
         # Usar meses con datos disponibles, no meses calendario
         
-        # Crecimiento mensual: mes actual vs mes pasado (ya calculados con datos disponibles)
-        crecimiento_mensual = round(((ventas_mes - ventas_mes_pasado) / ventas_mes_pasado) * 100, 1) if ventas_mes_pasado > 0 else 0
+        # Crecimiento mensual: mes actual vs mes pasado con proyección si el mes está incompleto
+        ventas_para_crecimiento = ventas_mes_proyectadas if factor_proyeccion_mensual != 1.0 else ventas_mes
+        crecimiento_mensual = round(((ventas_para_crecimiento - ventas_mes_pasado) / ventas_mes_pasado) * 100, 1) if ventas_mes_pasado > 0 else 0
         
         logger.info(f"Crecimiento mensual calculado: {crecimiento_mensual}% (ventas_mes: ${ventas_mes:,.0f}, ventas_mes_pasado: ${ventas_mes_pasado:,.0f})")
         
@@ -3341,6 +3363,8 @@ def get_analisis_rentabilidad():
                 (df['fecha_parsed'].dt.year == mes_dt.year)
             ]
             ventas_mes_trimestre = pedidos_mes_trimestre['precio'].sum()
+            if mes_dt.month == mes_actual and mes_dt.year == anio_actual:
+                ventas_mes_trimestre = ventas_mes_proyectadas
             ventas_trimestre += ventas_mes_trimestre
             logger.info(f"  Mes {mes_dt.month}/{mes_dt.year}: {len(pedidos_mes_trimestre)} pedidos, ${ventas_mes_trimestre:,.0f} ventas")
         
@@ -3824,6 +3848,11 @@ def get_analisis_rentabilidad():
                 "crecimiento": {
                     "mensual": crecimiento_mensual,
                     "trimestral": crecimiento_trimestral,
+                    "ventas_mes_real": int(ventas_mes),
+                    "ventas_mes_proyectadas": int(ventas_mes_proyectadas),
+                    "dias_cubiertos_mes_actual": int(dias_transcurridos_actual),
+                    "dias_totales_mes_actual": int(dias_mes_actual),
+                    "factor_proyeccion_mensual": round(factor_proyeccion_mensual, 2),
                     "ventas_trimestre": int(ventas_trimestre),
                     "ventas_trimestre_anterior": int(ventas_trimestre_anterior)
                 },
