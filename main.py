@@ -2337,39 +2337,59 @@ def get_pedidos_por_horario():
             # Clasificar según la hora válida
             if hora_valida is not None:
                 pedidos_procesados += 1
-                if hora_valida >= 11 and hora_valida < 13:
+                # Expandir rangos para incluir más pedidos
+                # Mañana: 10:00 - 14:00 (antes era 11-13)
+                # Tarde: 14:00 - 20:00 (antes era 15-19)
+                if hora_valida >= 10 and hora_valida < 14:
                     bloque_manana += 1
-                elif hora_valida >= 15 and hora_valida < 19:
+                elif hora_valida >= 14 and hora_valida < 20:
                     bloque_tarde += 1
                 else:
                     pedidos_fuera_rango += 1
         
+        # Calcular total de pedidos del mes actual (TODOS, no solo los con hora en rangos)
+        total_pedidos_mes = len(df)
+        
+        logger.info(f"Total de pedidos del mes actual: {total_pedidos_mes}")
         logger.info(f"Pedidos procesados con hora: {pedidos_procesados}")
-        logger.info(f"Pedidos en rango mañana (11-13h): {bloque_manana}")
-        logger.info(f"Pedidos en rango tarde (15-19h): {bloque_tarde}")
+        logger.info(f"Pedidos en rango mañana (10-14h): {bloque_manana}")
+        logger.info(f"Pedidos en rango tarde (14-20h): {bloque_tarde}")
         logger.info(f"Pedidos fuera de rangos: {pedidos_fuera_rango}")
         
-        total = bloque_manana + bloque_tarde
+        # Total de pedidos en los rangos específicos
+        total_en_rangos = bloque_manana + bloque_tarde
         
-        if total > 0:
-            porcentaje_manana = round((bloque_manana / total) * 100)
-            porcentaje_tarde = round((bloque_tarde / total) * 100)
+        # Si hay pedidos en los rangos, calcular porcentajes basados en el total del mes
+        if total_pedidos_mes > 0:
+            porcentaje_manana = round((bloque_manana / total_pedidos_mes) * 100)
+            porcentaje_tarde = round((bloque_tarde / total_pedidos_mes) * 100)
         else:
             porcentaje_manana = 0
             porcentaje_tarde = 0
         
+        # Si no hay pedidos en los rangos pero sí hay pedidos del mes, usar el total del mes
+        if total_en_rangos == 0 and total_pedidos_mes > 0:
+            logger.warning(f"No hay pedidos en los rangos 11-13h o 15-19h, pero hay {total_pedidos_mes} pedidos del mes actual")
+            # En este caso, mostrar 0 para los rangos pero mantener el total del mes
+            total_mostrar = total_pedidos_mes
+        else:
+            total_mostrar = total_en_rangos
+        
         resultado = {
             "pedidos_manana": bloque_manana,
             "pedidos_tarde": bloque_tarde,
-            "total": total,
+            "total": total_mostrar,  # Mostrar total en rangos o total del mes si no hay en rangos
+            "total_mes": total_pedidos_mes,  # Total real del mes actual
             "porcentaje_manana": porcentaje_manana,
             "porcentaje_tarde": porcentaje_tarde
         }
         
         logger.info("=== PEDIDOS POR HORARIO (MES ACTUAL) ===")
-        logger.info(f"Mañana (11-13h): {bloque_manana} ({porcentaje_manana}%)")
-        logger.info(f"Tarde (15-19h): {bloque_tarde} ({porcentaje_tarde}%)")
-        logger.info(f"Total: {total}")
+        logger.info(f"Total pedidos del mes: {total_pedidos_mes}")
+        logger.info(f"Mañana (10-14h): {bloque_manana} ({porcentaje_manana}%)")
+        logger.info(f"Tarde (14-20h): {bloque_tarde} ({porcentaje_tarde}%)")
+        logger.info(f"Total en rangos: {total_en_rangos}")
+        logger.info(f"Pedidos fuera de rangos: {pedidos_fuera_rango}")
         logger.info("==========================")
         
         return resultado
