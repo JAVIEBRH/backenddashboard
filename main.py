@@ -2457,6 +2457,12 @@ def get_pedidos_por_horario():
         logger.info(f"Pedidos en rango mañana (10-14h): {bloque_manana_mes}")
         logger.info(f"Pedidos en rango tarde (14-20h): {bloque_tarde_mes}")
         logger.info(f"Total en rangos del mes: {total_en_rangos_mes}")
+        logger.info(f"Pedidos sin hora o fuera de rangos: {total_pedidos_mes - pedidos_procesados_mes}")
+        
+        # Si hay pedidos sin hora, intentar usar la hora de creación del pedido
+        if total_pedidos_mes > pedidos_procesados_mes:
+            pedidos_sin_hora = total_pedidos_mes - pedidos_procesados_mes
+            logger.info(f"⚠️ Hay {pedidos_sin_hora} pedidos sin hora o fuera de rangos que no se están contando")
         
         # Si no hay pedidos en los rangos pero sí hay pedidos del mes, usar el total del mes
         if total_en_rangos_mes == 0 and total_pedidos_mes > 0:
