@@ -2192,7 +2192,7 @@ def get_ventas_semanales():
 
 @app.get("/pedidos-por-horario", response_model=Dict)
 def get_pedidos_por_horario():
-    """Calcular pedidos por horario del mes actual"""
+    """Calcular pedidos por horario del mes actual usando muestra histórica para porcentajes"""
     try:
         # Obtener pedidos usando data_adapter (igual que otros endpoints)
         logger.info("Obteniendo pedidos combinados para horarios usando capa de adaptación...")
@@ -2225,7 +2225,7 @@ def get_pedidos_por_horario():
                 "porcentaje_tarde": 0
             }
         
-        # Filtrar solo pedidos del mes actual (igual que endpoint KPIs)
+        # Procesar fechas
         if 'fecha' in df.columns:
             logger.info(f"Total de pedidos ANTES del filtro de fecha: {len(df)}")
             df['fecha_parsed'] = df['fecha'].apply(parse_fecha)
@@ -2236,19 +2236,30 @@ def get_pedidos_por_horario():
             hoy = datetime.now()
             mes_actual = hoy.month
             anio_actual = hoy.year
-            logger.info(f"Filtrando pedidos del mes actual: {mes_actual}/{anio_actual}")
+            
+            # Calcular fecha límite para muestra histórica (últimos 6 meses)
+            fecha_limite_historica = hoy - timedelta(days=180)  # 6 meses aproximadamente
+            
             logger.info(f"Fecha de hoy: {hoy.strftime('%Y-%m-%d %H:%M:%S')}")
+            logger.info(f"Filtrando pedidos del mes actual: {mes_actual}/{anio_actual}")
+            logger.info(f"Usando muestra histórica desde: {fecha_limite_historica.strftime('%Y-%m-%d')} (últimos 6 meses)")
             
-            # Filtrar solo pedidos del mes actual
-            df_antes_filtro = len(df)
-            df = df[(df['fecha_parsed'].dt.month == mes_actual) & (df['fecha_parsed'].dt.year == anio_actual)]
-            logger.info(f"Pedidos ANTES del filtro de mes: {df_antes_filtro}")
-            logger.info(f"Pedidos DESPUÉS del filtro de mes actual ({mes_actual}/{anio_actual}): {len(df)}")
+            # Crear DataFrame para muestra histórica (últimos 6 meses)
+            df_historico = df[df['fecha_parsed'] >= fecha_limite_historica]
+            logger.info(f"Pedidos en muestra histórica (últimos 6 meses): {len(df_historico)}")
             
-            if len(df) > 0:
-                logger.info(f"Rango de fechas de pedidos filtrados: {df['fecha_parsed'].min()} a {df['fecha_parsed'].max()}")
+            # Filtrar solo pedidos del mes actual para mostrar
+            df_mes_actual = df[(df['fecha_parsed'].dt.month == mes_actual) & (df['fecha_parsed'].dt.year == anio_actual)]
+            logger.info(f"Pedidos del mes actual ({mes_actual}/{anio_actual}): {len(df_mes_actual)}")
+            
+            if len(df_mes_actual) > 0:
+                logger.info(f"Rango de fechas de pedidos del mes actual: {df_mes_actual['fecha_parsed'].min()} a {df_mes_actual['fecha_parsed'].max()}")
+            
+            # Usar muestra histórica para calcular porcentajes
+            df = df_historico.copy()
         else:
             logger.warning("⚠️ No se encontró columna 'fecha' en los pedidos, usando todos los pedidos")
+            df_mes_actual = df.copy()
         
         if df.empty:
             logger.warning("No hay pedidos del mes actual")
@@ -2279,13 +2290,14 @@ def get_pedidos_por_horario():
             columnas_hora = [col for col in df.columns if 'hora' in col.lower() or 'time' in col.lower()]
             logger.info(f"Columnas relacionadas con hora encontradas: {columnas_hora}")
         
-        # Calcular bloques
+        # Calcular bloques para muestra histórica (para porcentajes)
         import re
-        bloque_manana = 0
-        bloque_tarde = 0
-        pedidos_procesados = 0
-        pedidos_fuera_rango = 0
+        bloque_manana_historico = 0
+        bloque_tarde_historico = 0
+        pedidos_procesados_historico = 0
+        pedidos_fuera_rango_historico = 0
         
+        # Procesar muestra histórica para calcular porcentajes
         for _, pedido in df.iterrows():
             hora_valida = None
             
@@ -2334,62 +2346,132 @@ def get_pedidos_por_horario():
                     
                     hora_valida = hora
             
-            # Clasificar según la hora válida
+            # Clasificar según la hora válida (muestra histórica)
             if hora_valida is not None:
-                pedidos_procesados += 1
+                pedidos_procesados_historico += 1
                 # Expandir rangos para incluir más pedidos
                 # Mañana: 10:00 - 14:00 (antes era 11-13)
                 # Tarde: 14:00 - 20:00 (antes era 15-19)
                 if hora_valida >= 10 and hora_valida < 14:
-                    bloque_manana += 1
+                    bloque_manana_historico += 1
                 elif hora_valida >= 14 and hora_valida < 20:
-                    bloque_tarde += 1
+                    bloque_tarde_historico += 1
                 else:
-                    pedidos_fuera_rango += 1
+                    pedidos_fuera_rango_historico += 1
         
-        # Calcular total de pedidos del mes actual (TODOS, no solo los con hora en rangos)
-        total_pedidos_mes = len(df)
+        # Calcular total de pedidos en muestra histórica
+        total_pedidos_historico = len(df)
+        total_en_rangos_historico = bloque_manana_historico + bloque_tarde_historico
         
-        logger.info(f"Total de pedidos del mes actual: {total_pedidos_mes}")
-        logger.info(f"Pedidos procesados con hora: {pedidos_procesados}")
-        logger.info(f"Pedidos en rango mañana (10-14h): {bloque_manana}")
-        logger.info(f"Pedidos en rango tarde (14-20h): {bloque_tarde}")
-        logger.info(f"Pedidos fuera de rangos: {pedidos_fuera_rango}")
+        logger.info(f"=== MUESTRA HISTÓRICA (últimos 6 meses) ===")
+        logger.info(f"Total pedidos históricos: {total_pedidos_historico}")
+        logger.info(f"Pedidos procesados con hora: {pedidos_procesados_historico}")
+        logger.info(f"Pedidos en rango mañana (10-14h): {bloque_manana_historico}")
+        logger.info(f"Pedidos en rango tarde (14-20h): {bloque_tarde_historico}")
+        logger.info(f"Total en rangos históricos: {total_en_rangos_historico}")
         
-        # Total de pedidos en los rangos específicos
-        total_en_rangos = bloque_manana + bloque_tarde
-        
-        # Si hay pedidos en los rangos, calcular porcentajes basados en el total del mes
-        if total_pedidos_mes > 0:
-            porcentaje_manana = round((bloque_manana / total_pedidos_mes) * 100)
-            porcentaje_tarde = round((bloque_tarde / total_pedidos_mes) * 100)
+        # Calcular porcentajes basados en muestra histórica
+        if total_en_rangos_historico > 0:
+            porcentaje_manana = round((bloque_manana_historico / total_en_rangos_historico) * 100)
+            porcentaje_tarde = round((bloque_tarde_historico / total_en_rangos_historico) * 100)
         else:
             porcentaje_manana = 0
             porcentaje_tarde = 0
         
+        logger.info(f"Porcentajes históricos - Mañana: {porcentaje_manana}%, Tarde: {porcentaje_tarde}%")
+        
+        # Ahora procesar pedidos del mes actual para mostrar
+        bloque_manana_mes = 0
+        bloque_tarde_mes = 0
+        pedidos_procesados_mes = 0
+        
+        if 'fecha' in df_mes_actual.columns and len(df_mes_actual) > 0:
+            for _, pedido in df_mes_actual.iterrows():
+                hora_valida = None
+                
+                # Intentar obtener hora desde campo 'hora' (formato 24h: "14:30:00" o "14:30")
+                if pd.notna(pedido.get('hora')):
+                    hora_str = str(pedido['hora']).strip()
+                    
+                    # Intentar parsear formato 24 horas: "14:30:00" o "14:30"
+                    hora_match_24h = re.match(r'(\d{1,2}):(\d{2})(?::\d{2})?', hora_str)
+                    
+                    if hora_match_24h:
+                        hora = int(hora_match_24h.group(1))
+                        hora_valida = hora
+                    else:
+                        # Intentar formato 12 horas: "02:53 pm" o "11:30 am"
+                        hora_match_12h = re.match(r'(\d{1,2}):(\d{2})\s*(am|pm)', hora_str.lower())
+                        
+                        if hora_match_12h:
+                            hora = int(hora_match_12h.group(1))
+                            ampm = hora_match_12h.group(3)
+                            
+                            # Convertir a formato 24 horas
+                            if ampm == 'pm' and hora != 12:
+                                hora += 12
+                            elif ampm == 'am' and hora == 12:
+                                hora = 0
+                            
+                            hora_valida = hora
+                
+                # Si no hay hora en 'hora', intentar 'horaagenda' (formato 12h)
+                if hora_valida is None and pd.notna(pedido.get('horaagenda')):
+                    hora_str = str(pedido['horaagenda']).strip()
+                    
+                    # Formato: "02:53 pm" o "11:30 am"
+                    hora_match = re.match(r'(\d{1,2}):(\d{2})\s*(am|pm)', hora_str.lower())
+                    
+                    if hora_match:
+                        hora = int(hora_match.group(1))
+                        ampm = hora_match.group(3)
+                        
+                        # Convertir a formato 24 horas
+                        if ampm == 'pm' and hora != 12:
+                            hora += 12
+                        elif ampm == 'am' and hora == 12:
+                            hora = 0
+                        
+                        hora_valida = hora
+                
+                # Clasificar según la hora válida (mes actual)
+                if hora_valida is not None:
+                    pedidos_procesados_mes += 1
+                    if hora_valida >= 10 and hora_valida < 14:
+                        bloque_manana_mes += 1
+                    elif hora_valida >= 14 and hora_valida < 20:
+                        bloque_tarde_mes += 1
+        
+        # Calcular total de pedidos del mes actual
+        total_pedidos_mes = len(df_mes_actual)
+        total_en_rangos_mes = bloque_manana_mes + bloque_tarde_mes
+        
+        logger.info(f"=== PEDIDOS DEL MES ACTUAL ===")
+        logger.info(f"Total pedidos del mes: {total_pedidos_mes}")
+        logger.info(f"Pedidos procesados con hora: {pedidos_procesados_mes}")
+        logger.info(f"Pedidos en rango mañana (10-14h): {bloque_manana_mes}")
+        logger.info(f"Pedidos en rango tarde (14-20h): {bloque_tarde_mes}")
+        logger.info(f"Total en rangos del mes: {total_en_rangos_mes}")
+        
         # Si no hay pedidos en los rangos pero sí hay pedidos del mes, usar el total del mes
-        if total_en_rangos == 0 and total_pedidos_mes > 0:
-            logger.warning(f"No hay pedidos en los rangos 11-13h o 15-19h, pero hay {total_pedidos_mes} pedidos del mes actual")
-            # En este caso, mostrar 0 para los rangos pero mantener el total del mes
+        if total_en_rangos_mes == 0 and total_pedidos_mes > 0:
             total_mostrar = total_pedidos_mes
         else:
-            total_mostrar = total_en_rangos
+            total_mostrar = total_en_rangos_mes
         
         resultado = {
-            "pedidos_manana": bloque_manana,
-            "pedidos_tarde": bloque_tarde,
-            "total": total_mostrar,  # Mostrar total en rangos o total del mes si no hay en rangos
+            "pedidos_manana": bloque_manana_mes,  # Pedidos del mes actual
+            "pedidos_tarde": bloque_tarde_mes,  # Pedidos del mes actual
+            "total": total_mostrar,  # Total del mes actual
             "total_mes": total_pedidos_mes,  # Total real del mes actual
-            "porcentaje_manana": porcentaje_manana,
-            "porcentaje_tarde": porcentaje_tarde
+            "porcentaje_manana": porcentaje_manana,  # Porcentaje basado en muestra histórica
+            "porcentaje_tarde": porcentaje_tarde  # Porcentaje basado en muestra histórica
         }
         
-        logger.info("=== PEDIDOS POR HORARIO (MES ACTUAL) ===")
-        logger.info(f"Total pedidos del mes: {total_pedidos_mes}")
-        logger.info(f"Mañana (10-14h): {bloque_manana} ({porcentaje_manana}%)")
-        logger.info(f"Tarde (14-20h): {bloque_tarde} ({porcentaje_tarde}%)")
-        logger.info(f"Total en rangos: {total_en_rangos}")
-        logger.info(f"Pedidos fuera de rangos: {pedidos_fuera_rango}")
+        logger.info("=== RESULTADO FINAL ===")
+        logger.info(f"Pedidos del mes actual - Mañana: {bloque_manana_mes}, Tarde: {bloque_tarde_mes}")
+        logger.info(f"Porcentajes históricos - Mañana: {porcentaje_manana}%, Tarde: {porcentaje_tarde}%")
+        logger.info(f"Total del mes: {total_mostrar}")
         logger.info("==========================")
         
         return resultado
